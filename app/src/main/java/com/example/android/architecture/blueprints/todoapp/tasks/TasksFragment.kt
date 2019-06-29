@@ -27,6 +27,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.example.android.architecture.blueprints.todoapp.EventObserver
 import com.example.android.architecture.blueprints.todoapp.R
@@ -36,8 +37,6 @@ import com.example.android.architecture.blueprints.todoapp.util.getVmFactory
 import com.example.android.architecture.blueprints.todoapp.util.setupSnackbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import timber.log.Timber
-import java.util.ArrayList
 
 /**
  * Display a grid of [Task]s. User can choose to view all, active or completed tasks.
@@ -154,13 +153,27 @@ class TasksFragment : Fragment() {
     }
 
     private fun setupListAdapter() {
-        val viewModel = viewDataBinding.viewmodel
-        if (viewModel != null) {
-            listAdapter = TasksAdapter(ArrayList(0), viewModel)
-            viewDataBinding.tasksList.adapter = listAdapter
-        } else {
-            Timber.w("ViewModel not initialized when attempting to set up adapter.")
-        }
+
+
+//        val userActionsListener = object : TaskItemUserActionsListener {
+//            override fun onCompleteChanged(task: Task, v: View) {
+//                val checked = (v as CheckBox).isChecked
+//                viewModel.completeTask(task, checked)
+//            }
+//
+//            override fun onTaskClicked(task: Task) {
+//                viewModel.openTask(task.id)
+//            }
+//        }
+
+
+        listAdapter = TasksAdapter()
+        viewDataBinding.tasksList.adapter = listAdapter
+
+        viewModel.items.observe(viewLifecycleOwner, Observer { tasks ->
+            listAdapter.submitList(tasks)
+        })
+
     }
 
     private fun setupRefreshLayout() {
