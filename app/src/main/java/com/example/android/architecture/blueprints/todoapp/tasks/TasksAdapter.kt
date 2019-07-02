@@ -23,78 +23,25 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.databinding.TaskItemBinding
 
-class TasksAdapter : ListAdapter<Task, TasksAdapter.ViewHolder>(TaskDiffCallback()) {
-
+class TasksAdapter(val clickListener: TaskItemUserActionsListener) :
+        ListAdapter<Task, TasksAdapter.ViewHolder>(TaskDiffCallback()) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
 
-        holder.bind(item)
+        holder.bind(clickListener, item)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder.from(parent)
     }
 
-//    fun replaceData(tasks: List<Task>) {
-//        setList(tasks)
-//    }
-//
-//    override fun getCount() = tasks.size
-//
-//    override fun getItem(position: Int) = tasks[position]
-//
-//    override fun getItemId(position: Int) = position.toLong()
-//
-//    override fun getView(position: Int, view: View?, viewGroup: ViewGroup): View {
-//        val binding: TaskItemBinding
-//        binding = if (view == null) {
-//            // Inflate
-//            val inflater = LayoutInflater.from(viewGroup.context)
-//
-//            // Create the binding
-//            TaskItemBinding.inflate(inflater, viewGroup, false)
-//        } else {
-//            // Recycling view
-//            DataBindingUtil.getBinding(view) ?: throw IllegalStateException()
-//        }
-//
-//        val userActionsListener = object : TaskItemUserActionsListener {
-//            override fun onCompleteChanged(task: Task, v: View) {
-//                val checked = (v as CheckBox).isChecked
-//                tasksViewModel.completeTask(task, checked)
-//            }
-//
-//            override fun onTaskClicked(task: Task) {
-//                tasksViewModel.openTask(task.id)
-//            }
-//        }
-//
-//        with(binding) {
-//            task = tasks[position]
-//            listener = userActionsListener
-//            executePendingBindings()
-//        }
-//
-//        return binding.root
-//    }
-//
-//
-//    private fun setList(tasks: List<Task>) {
-//        this.tasks = tasks
-//        notifyDataSetChanged()
-//    }
-
-
     class ViewHolder private constructor(val binding: TaskItemBinding)
         : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: Task) {
+        fun bind(listener: TaskItemUserActionsListener, item: Task) {
 
-
-            //binding.listener = userActionsListener
-
-
+            binding.listener = listener
             binding.task = item
             binding.executePendingBindings()
         }
@@ -113,7 +60,7 @@ class TasksAdapter : ListAdapter<Task, TasksAdapter.ViewHolder>(TaskDiffCallback
 /**
  * Callback for calculating the diff between two non-null items in a list.
  *
- * Used by ListAdapter to calculate the minumum number of changes between and old list and a new
+ * Used by ListAdapter to calculate the minimum number of changes between and old list and a new
  * list that's been passed to `submitList`.
  */
 class TaskDiffCallback : DiffUtil.ItemCallback<Task>() {

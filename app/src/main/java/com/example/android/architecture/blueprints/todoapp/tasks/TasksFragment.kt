@@ -23,6 +23,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -154,20 +155,18 @@ class TasksFragment : Fragment() {
 
     private fun setupListAdapter() {
 
+        val userActionsListener = object : TaskItemUserActionsListener {
+            override fun onCompleteChanged(task: Task, v: View) {
+                val checked = (v as CheckBox).isChecked
+                viewModel.completeTask(task, checked)
+            }
 
-//        val userActionsListener = object : TaskItemUserActionsListener {
-//            override fun onCompleteChanged(task: Task, v: View) {
-//                val checked = (v as CheckBox).isChecked
-//                viewModel.completeTask(task, checked)
-//            }
-//
-//            override fun onTaskClicked(task: Task) {
-//                viewModel.openTask(task.id)
-//            }
-//        }
+            override fun onTaskClicked(task: Task) {
+                viewModel.openTask(task.id)
+            }
+        }
 
-
-        listAdapter = TasksAdapter()
+        listAdapter = TasksAdapter(userActionsListener)
         viewDataBinding.tasksList.adapter = listAdapter
 
         viewModel.items.observe(viewLifecycleOwner, Observer { tasks ->
