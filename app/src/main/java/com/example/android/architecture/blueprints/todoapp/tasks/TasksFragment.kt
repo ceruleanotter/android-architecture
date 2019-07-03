@@ -159,6 +159,9 @@ class TasksFragment : Fragment() {
             override fun onCompleteChanged(task: Task, v: View) {
                 val checked = (v as CheckBox).isChecked
                 viewModel.completeTask(task, checked)
+
+                // TODO need some way to trigger tasks to refresh when checkbox state changed
+                viewModel.loadTasks(false)
             }
 
             override fun onTaskClicked(task: Task) {
