@@ -87,8 +87,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginRight="@dimen/activity_horizontal_margin"
                     android:onClick="@{(view) -> listener.onCompleteChanged(view)}"
-                    android:paddingTop="1dp"
-                    android:checked="@{viewmodel.completed}" />
+                    android:paddingTop="1dp" />
 
                 <TextView
                     android:id="@+id/task_detail_title"
