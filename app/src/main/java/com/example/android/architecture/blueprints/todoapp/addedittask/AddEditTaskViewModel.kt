@@ -96,6 +96,7 @@ class AddEditTaskViewModel(
     }
 
     private fun onDataNotAvailable() {
+        // TODO should this show some sort of error to differentiate it from a new load?
         _dataLoading.value = false
     }
 

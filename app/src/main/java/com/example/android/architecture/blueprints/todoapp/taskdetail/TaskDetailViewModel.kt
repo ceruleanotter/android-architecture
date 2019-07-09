@@ -48,11 +48,14 @@ class TaskDetailViewModel(
                 _dataLoading.value = false
             }
         }
+        // TODO I think all this needs to be is a map as opposed to a switchMap - then computeResult
+        // simply returns a Result instead of a LiveData result
         tasksRepository.observeTask(taskId).switchMap { computeResult(it) }
 
     }
     val task: LiveData<Task> = _task
 
+    // TODO isDataAvailable seems like a mapping of whether or not _task has an Result.Error
     private val _isDataAvailable = MutableLiveData<Boolean>()
     val isDataAvailable: LiveData<Boolean> = _isDataAvailable
 
@@ -69,6 +72,7 @@ class TaskDetailViewModel(
     val snackbarMessage: LiveData<Event<Int>> = _snackbarText
 
     // This LiveData depends on another so we can use a transformation.
+    // TODO Use LiveData.map extension function
     val completed: LiveData<Boolean> = Transformations.map(_task) { input: Task? ->
         input?.isCompleted ?: false
     }
@@ -101,6 +105,8 @@ class TaskDetailViewModel(
             return
         }
         if (taskId == null) {
+            // TODO this seems like it should cause Tasks to be a Result.Error -- this logic
+            // could be moved and handled in the params switchmap
             _isDataAvailable.value = false
             return
         }
@@ -126,6 +132,10 @@ class TaskDetailViewModel(
     }
 
 
+    // TODO confused about forceUpdate - only seems to be true on explicit refresh from menu
+    // in this method, couldn't you just call tasksRepository.refreshTasks() here?
+    // tasksRepository.observeTask has a task that will be updated by calling the repository refresh
+    // taks, removing, I believe, the need for forceUpdate
     fun refresh() {
         // Recreate the parameters to force a new data load.
         _params.value = _params.value?.copy(second = true)

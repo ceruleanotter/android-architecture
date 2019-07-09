@@ -53,6 +53,9 @@ class DefaultTasksRepository(
         return tasksLocalDataSource.observeTasks()
     }
 
+    // TODO method ordering here is wonky,
+    //  reorder to have all multiple task methods first, followed by all single task methods
+    //  or group by action (refresh next to each other). Would also put observe methods at the top
     override suspend fun refreshTask(taskId: String) {
         updateTaskFromRemoteDataSource(taskId)
     }
@@ -95,6 +98,13 @@ class DefaultTasksRepository(
 
     override suspend fun saveTask(task: Task) {
         coroutineScope {
+            // TODO Add comment here or change flow to talk about how to handle when remote fails
+            // In the case remote save fails, the fresh "local" data will be overwritten by the
+            // "old" remote data on next sync
+            // Same with all of the write operations below
+            // Simple flow could be updating the remote with a "loading" icon, waiting to see it if
+            // succeeded before saving in local - on failure, inform user and make no change to local
+
             launch { tasksRemoteDataSource.saveTask(task) }
             launch { tasksLocalDataSource.saveTask(task) }
         }
@@ -153,6 +163,7 @@ class DefaultTasksRepository(
         }
     }
 
+    // TODO Put this up higher with the other getTask methods
     private suspend fun getTaskWithId(id: String): Result<Task> {
         return tasksLocalDataSource.getTask(id)
     }

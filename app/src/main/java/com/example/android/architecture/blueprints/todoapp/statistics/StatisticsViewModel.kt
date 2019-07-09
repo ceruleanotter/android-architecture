@@ -33,6 +33,8 @@ class StatisticsViewModel(
     private val tasksRepository: TasksRepository
 ) : ViewModel() {
 
+    // TODO rather than having these be two separate variables, can this state be represented in one
+    // result variable?
     private val _dataLoading = MutableLiveData<Boolean>()
     val dataLoading: LiveData<Boolean> = _dataLoading
 
@@ -67,6 +69,7 @@ class StatisticsViewModel(
 
         wrapEspressoIdlingResource {
             viewModelScope.launch {
+                // TODO Should this be switched to LiveData observation?
                 tasksRepository.getTasks().let { result ->
                     if (result is Success) {
                         _error.value = false

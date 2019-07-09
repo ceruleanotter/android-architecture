@@ -74,6 +74,7 @@ class TasksFragment : Fragment() {
                 true
             }
             R.id.menu_refresh -> {
+                // TODO why is this not using viewModel.refresh()?
                 viewModel.loadTasks(true)
                 true
             }
@@ -154,6 +155,8 @@ class TasksFragment : Fragment() {
     }
 
     private fun setupListAdapter() {
+        // TODO don't get why the viewmodel needs to come from the binding as opposed to the
+        // instance variable, where is cannot be null
         val viewModel = viewDataBinding.viewmodel
         if (viewModel != null) {
             listAdapter = TasksAdapter(viewModel)

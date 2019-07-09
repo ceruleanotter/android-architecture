@@ -41,12 +41,28 @@ class TasksViewModel(
 
     private val _forceUpdate = MutableLiveData<Boolean>(false)
 
+    // TODO I think there's a way to get rid of forceUpdate
+
+    // When you want to sync with the server (a forced update), this should be a call to the
+    // repository - if it syncs, the db will change and room will update the livedata, which is the
+    // observeTasks() LiveData
+
+    // filtering - I would expect this to be controlled by a livedata with a filter state - then
+    // since _items is controlled both by what's observed from the repo and the filter state, I'd
+    // combine that logic in a MediatorLiveData - when the observeTasks livedata change or the
+    // filter state changes, combine these two together to determine what tasks are shown
+    // on screen.
+
+
     private val _items: LiveData<List<Task>> = _forceUpdate.switchMap { forceUpdate ->
         if (forceUpdate) {
             _dataLoading.value = true
             viewModelScope.launch {
                 tasksRepository.refreshTasks()
                 _dataLoading.value = false
+                // TODO Assuming forceUpdate is necessary, should forceUpdate be set to false here?
+                //  Force update should only happen once then additional updates don't necessarily
+                //  need to be forced
             }
         }
         tasksRepository.observeTasks().switchMap { filterTasks(it) }
@@ -212,6 +228,7 @@ class TasksViewModel(
         _forceUpdate.value = forceUpdate
     }
 
+    // TODO filter tasks vs. filter items has me confused, names are so similar
     private fun filterItems(tasks: List<Task>, filteringType: TasksFilterType): List<Task> {
             val tasksToShow = ArrayList<Task>()
             // We filter the tasks based on the requestType
