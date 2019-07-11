@@ -40,7 +40,7 @@
         android:onClick="@{() -> viewmodel.openTask(task.id)}">
 
         <CheckBox
-            android:id="@+id/complete"
+            android:id="@+id/complete_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -48,11 +48,12 @@
             android:checked="@{task.completed}" />
 
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/title_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
             android:text="@{task.titleForList}"
             app:completedTask="@{task.completed}" />
