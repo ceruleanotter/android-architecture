@@ -62,6 +62,27 @@ class StatisticsUtilsTest {
     }
 
 
+    @Test
+    fun getActiveAndCompletedStats_both() {
+        val tasks = listOf<Task>(
+            Task("title", "desc", true),
+            Task("title", "desc", true),
+            Task("title", "desc", false),
+            Task("title", "desc", false),
+            Task("title", "desc", false)
+        )
+
+        val result = getActiveAndCompletedStats(tasks)
+
+        assertEquals(result.completedTasksPercent, 40f)
+        assertEquals(result.activeTasksPercent, 60f)
+
+
+//        // In Kotlin "is" is a reserved keyword, which is why you need the backticks
+//        assertThat(result.completedTasksPercent, `is`(0f))
+//        assertThat(result.activeTasksPercent, `is`(100f))
+    }
+
 
 
 //    @Test
@@ -118,13 +139,13 @@ class StatisticsUtilsTest {
 //        assertThat(result.completedTasksPercent, `is`(0f))
 //    }
 //
-//    @Test
-//    fun getActiveAndCompletedStats_empty() {
-//        // When there are no tasks
-//        val result = getActiveAndCompletedStats(emptyList())
-//
-//        // Both active and completed tasks are 0
-//        assertThat(result.activeTasksPercent, `is`(0f))
-//        assertThat(result.completedTasksPercent, `is`(0f))
-//    }
+    @Test
+    fun getActiveAndCompletedStats_empty() {
+        // When there are no tasks
+        val result = getActiveAndCompletedStats(emptyList())
+
+        // Both active and completed tasks are 0
+        assertThat(result.activeTasksPercent, `is`(0f))
+        assertThat(result.completedTasksPercent, `is`(0f))
+    }
 }
