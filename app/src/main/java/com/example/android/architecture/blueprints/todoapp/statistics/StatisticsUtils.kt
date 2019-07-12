@@ -23,7 +23,14 @@ import com.example.android.architecture.blueprints.todoapp.data.Task
  */
 internal fun getActiveAndCompletedStats(tasks: List<Task>?): StatsResult {
     // TODO implement task percentage complete calculation
-    return StatsResult(0f, 0f)
+    val firstTask = tasks?.get(0)
+
+    if (firstTask != null && firstTask.isCompleted) {
+        return StatsResult(0f, 100f)
+    } else {
+        return StatsResult(100f, 0f)
+    }
+
 }
 
 data class StatsResult(val activeTasksPercent: Float, val completedTasksPercent: Float)
