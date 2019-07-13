@@ -23,7 +23,7 @@ import com.example.android.architecture.blueprints.todoapp.data.Task
  */
 internal fun getActiveAndCompletedStats(tasks: List<Task>?): StatsResult {
 
-    return if (tasks == null) {
+    return if (tasks == null || tasks.isEmpty()) {
         StatsResult(0f, 0f)
     } else {
         val totalTasks = tasks.size
