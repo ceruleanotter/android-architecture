@@ -18,7 +18,6 @@ package com.example.android.architecture.blueprints.todoapp.statistics
 
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import org.hamcrest.core.Is.`is`
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThat
 import org.junit.Test
 
@@ -29,116 +28,58 @@ class StatisticsUtilsTest {
 
     @Test
     fun getActiveAndCompletedStats_noCompleted() {
-        val tasks = listOf<Task>(
-            Task("title", "desc", false)
+        val tasks = listOf(
+            Task("title", "desc", isCompleted = false)
         )
-
+        // When the list of tasks is computed with an active task
         val result = getActiveAndCompletedStats(tasks)
 
-        assertEquals(result.completedTasksPercent, 0f)
-        assertEquals(result.activeTasksPercent, 100f)
-
-
-//        // In Kotlin "is" is a reserved keyword, which is why you need the backticks
-//        assertThat(result.completedTasksPercent, `is`(0f))
-//        assertThat(result.activeTasksPercent, `is`(100f))
+        // Then the percentages are 100 and 0
+        assertThat(result.activeTasksPercent, `is`(100f))
+        assertThat(result.completedTasksPercent, `is`(0f))
     }
 
     @Test
     fun getActiveAndCompletedStats_noActive() {
-        val tasks = listOf<Task>(
-            Task("title", "desc", true)
+        val tasks = listOf(
+            Task("title", "desc", isCompleted = true)
         )
-
+        // When the list of tasks is computed with a completed task
         val result = getActiveAndCompletedStats(tasks)
 
-        assertEquals(result.completedTasksPercent, 100f)
-        assertEquals(result.activeTasksPercent, 0f)
-
-
-//        // In Kotlin "is" is a reserved keyword, which is why you need the backticks
-//        assertThat(result.completedTasksPercent, `is`(0f))
-//        assertThat(result.activeTasksPercent, `is`(100f))
+        // Then the percentages are 0 and 100
+        assertThat(result.activeTasksPercent, `is`(0f))
+        assertThat(result.completedTasksPercent, `is`(100f))
     }
-
 
     @Test
     fun getActiveAndCompletedStats_both() {
-        val tasks = listOf<Task>(
-            Task("title", "desc", true),
-            Task("title", "desc", true),
-            Task("title", "desc", false),
-            Task("title", "desc", false),
-            Task("title", "desc", false)
+        // Given 3 completed tasks and 2 active tasks
+        val tasks = listOf(
+            Task("title", "desc", isCompleted = true),
+            Task("title", "desc", isCompleted = true),
+            Task("title", "desc", isCompleted = true),
+            Task("title", "desc", isCompleted = false),
+            Task("title", "desc", isCompleted = false)
         )
-
+        // When the list of tasks is computed
         val result = getActiveAndCompletedStats(tasks)
 
-        assertEquals(result.completedTasksPercent, 40f)
-        assertEquals(result.activeTasksPercent, 60f)
-
-
-//        // In Kotlin "is" is a reserved keyword, which is why you need the backticks
-//        assertThat(result.completedTasksPercent, `is`(0f))
-//        assertThat(result.activeTasksPercent, `is`(100f))
+        // Then the result is 40-60
+        assertThat(result.activeTasksPercent, `is`(40f))
+        assertThat(result.completedTasksPercent, `is`(60f))
     }
 
+    @Test
+    fun getActiveAndCompletedStats_error() {
+        // When there's an error loading stats
+        val result = getActiveAndCompletedStats(null)
 
+        // Both active and completed tasks are 0
+        assertThat(result.activeTasksPercent, `is`(0f))
+        assertThat(result.completedTasksPercent, `is`(0f))
+    }
 
-//    @Test
-//    fun getActiveAndCompletedStats_noCompleted() {
-//        val tasks = listOf(
-//            Task("title", "desc", isCompleted = false)
-//        )
-//        // When the list of tasks is computed with an active task
-//        val result = getActiveAndCompletedStats(tasks)
-//
-//        // Then the percentages are 100 and 0
-//        assertThat(result.activeTasksPercent, `is`(100f))
-//        assertThat(result.completedTasksPercent, `is`(0f))
-//    }
-//
-//    @Test
-//    fun getActiveAndCompletedStats_noActive() {
-//        val tasks = listOf(
-//            Task("title", "desc", isCompleted = true)
-//        )
-//        // When the list of tasks is computed with a completed task
-//        val result = getActiveAndCompletedStats(tasks)
-//
-//        // Then the percentages are 0 and 100
-//        assertThat(result.activeTasksPercent, `is`(0f))
-//        assertThat(result.completedTasksPercent, `is`(100f))
-//    }
-//
-//    @Test
-//    fun getActiveAndCompletedStats_both() {
-//        // Given 3 completed tasks and 2 active tasks
-//        val tasks = listOf(
-//            Task("title", "desc", isCompleted = true),
-//            Task("title", "desc", isCompleted = true),
-//            Task("title", "desc", isCompleted = true),
-//            Task("title", "desc", isCompleted = false),
-//            Task("title", "desc", isCompleted = false)
-//        )
-//        // When the list of tasks is computed
-//        val result = getActiveAndCompletedStats(tasks)
-//
-//        // Then the result is 40-60
-//        assertThat(result.activeTasksPercent, `is`(40f))
-//        assertThat(result.completedTasksPercent, `is`(60f))
-//    }
-
-//    @Test
-//    fun getActiveAndCompletedStats_error() {
-//        // When there's an error loading stats
-//        val result = getActiveAndCompletedStats(null)
-//
-//        // Both active and completed tasks are 0
-//        assertThat(result.activeTasksPercent, `is`(0f))
-//        assertThat(result.completedTasksPercent, `is`(0f))
-//    }
-//
     @Test
     fun getActiveAndCompletedStats_empty() {
         // When there are no tasks
