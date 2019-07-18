@@ -47,7 +47,7 @@ class TasksViewModel(application: Application) : AndroidViewModel(application) {
                 _dataLoading.value = false
             }
         }
-        tasksRepository.observeTasks().switchMap { filterTasks(it) }
+        tasksRepository.observeTasks().switchMap { filterTasks(it, currentFiltering) }
 
     }
 
@@ -74,7 +74,7 @@ class TasksViewModel(application: Application) : AndroidViewModel(application) {
     private var currentFiltering = TasksFilterType.ALL_TASKS
 
     // Not used at the moment
-    private val isDataLoadingError = MutableLiveData<Boolean>()
+    val isDataLoadingError = MutableLiveData<Boolean>()
 
     private val _openTaskEvent = MutableLiveData<Event<String>>()
     val openTaskEvent: LiveData<Event<String>> = _openTaskEvent
@@ -185,15 +185,15 @@ class TasksViewModel(application: Application) : AndroidViewModel(application) {
         _snackbarText.value = Event(message)
     }
 
-    private fun filterTasks(tasksResult: Result<List<Task>>): LiveData<List<Task>> {
+    fun filterTasks(tasksResult: Result<List<Task>>, filter: TasksFilterType): LiveData<List<Task>> {
         // TODO: This is a good case for liveData builder. Replace when stable.
         val result = MutableLiveData<List<Task>>()
 
         if (tasksResult is Success) {
             isDataLoadingError.value = false
-            viewModelScope.launch {
-                result.value = filterItems(tasksResult.data, currentFiltering)
-            }
+            //viewModelScope.launch {
+                result.value = filterItems(tasksResult.data, filter)
+            //}
         } else {
             result.value = emptyList()
             showSnackbarMessage(R.string.loading_tasks_error)
