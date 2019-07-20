@@ -77,6 +77,11 @@ android {
         }
     }
 
+    dataBinding {
+        enabled = true
+        enabledForTests = true
+    }
+
 }
 
 /*

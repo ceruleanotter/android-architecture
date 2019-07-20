@@ -68,7 +68,8 @@ class AddEditTaskViewModelTest {
             title.value = newTitle
             description.value = newDescription
         }
-        addEditTaskViewModel.saveTask()
+        addEditTaskViewModel.saveTask(addEditTaskViewModel.title.value,
+            addEditTaskViewModel.description.value)
 
         val newTask = tasksRepository.tasksServiceData.values.first()
 
@@ -146,7 +147,8 @@ class AddEditTaskViewModelTest {
         }
 
         // When saving an incomplete task
-        addEditTaskViewModel.saveTask()
+        addEditTaskViewModel.saveTask(addEditTaskViewModel.title.value,
+            addEditTaskViewModel.description.value)
 
         // Then the snackbar shows an error
         assertSnackbarMessage(addEditTaskViewModel.snackbarText, string.empty_task_message)
