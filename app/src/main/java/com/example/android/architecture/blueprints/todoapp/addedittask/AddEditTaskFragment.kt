@@ -19,17 +19,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.android.architecture.blueprints.todoapp.EventObserver
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.databinding.AddtaskFragBinding
+import com.example.android.architecture.blueprints.todoapp.ScrollChildSwipeRefreshLayout
 import com.example.android.architecture.blueprints.todoapp.tasks.ADD_EDIT_RESULT_OK
 import com.example.android.architecture.blueprints.todoapp.util.getViewModelFactory
 import com.example.android.architecture.blueprints.todoapp.util.setupRefreshLayout
 import com.example.android.architecture.blueprints.todoapp.util.setupSnackbar
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 
 /**
@@ -37,31 +41,64 @@ import com.google.android.material.snackbar.Snackbar
  */
 class AddEditTaskFragment : Fragment() {
 
-    private lateinit var viewDataBinding: AddtaskFragBinding
-
     private val args: AddEditTaskFragmentArgs by navArgs()
 
     private val viewModel by viewModels<AddEditTaskViewModel> { getViewModelFactory() }
+
+    private lateinit var swipeRefreshLayout: ScrollChildSwipeRefreshLayout
+    private lateinit var addTaskLinearLayout: LinearLayout
+    private lateinit var addTaskTitleEditText: EditText
+    private lateinit var addTaskDescriptionEditText: EditText
+    private lateinit var saveTaskFab: FloatingActionButton
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val root = inflater.inflate(R.layout.addtask_frag, container, false)
-        viewDataBinding = AddtaskFragBinding.bind(root).apply {
-            this.viewmodel = viewModel
-        }
-        // Set the lifecycle owner to the lifecycle of the view
-        viewDataBinding.lifecycleOwner = this.viewLifecycleOwner
-        return viewDataBinding.root
+
+        swipeRefreshLayout = root.findViewById(R.id.refresh_layout)
+        addTaskLinearLayout = root.findViewById(R.id.add_task_linear_layout)
+        addTaskTitleEditText = root.findViewById(R.id.add_task_title_edit_text)
+        addTaskDescriptionEditText = root.findViewById(R.id.add_task_description_edit_text)
+        saveTaskFab = root.findViewById(R.id.save_task_fab)
+
+        return root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         setupSnackbar()
         setupNavigation()
-        this.setupRefreshLayout(viewDataBinding.refreshLayout)
+        this.setupRefreshLayout(swipeRefreshLayout)
+        setupViews()
         viewModel.start(args.taskId)
+    }
+
+    private fun setupViews() {
+        viewModel.dataLoading.observe(this, Observer { isLoading ->
+            swipeRefreshLayout.isEnabled = isLoading
+            swipeRefreshLayout.isRefreshing = isLoading
+
+            if (isLoading) {
+                addTaskLinearLayout.visibility = View.GONE
+            } else {
+                addTaskLinearLayout.visibility = View.VISIBLE
+            }
+        })
+
+        viewModel.title.observe(this, Observer { title ->
+            addTaskTitleEditText.setText(title)
+        })
+
+        viewModel.description.observe(this, Observer { description ->
+            addTaskDescriptionEditText.setText(description)
+        })
+
+        saveTaskFab.setOnClickListener {
+            viewModel.saveTask()
+        }
     }
 
     private fun setupSnackbar() {

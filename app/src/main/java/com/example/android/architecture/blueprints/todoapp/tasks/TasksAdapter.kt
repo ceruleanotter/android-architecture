@@ -15,13 +15,17 @@
  */
 package com.example.android.architecture.blueprints.todoapp.tasks
 
+import android.graphics.Paint
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.databinding.TaskItemBinding
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksAdapter.ViewHolder
 
 /**
@@ -40,22 +44,38 @@ class TasksAdapter(private val viewModel: TasksViewModel) :
         return ViewHolder.from(parent)
     }
 
-    class ViewHolder private constructor(val binding: TaskItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder private constructor(val itemLayout: View) :
+        RecyclerView.ViewHolder(itemLayout) {
+        private val checkBox: CheckBox = itemLayout.findViewById(R.id.complete_checkbox)
+        private val titleText: TextView = itemLayout.findViewById(R.id.title_text)
 
-        fun bind(viewModel: TasksViewModel, item: Task) {
 
-            binding.viewmodel = viewModel
-            binding.task = item
-            binding.executePendingBindings()
+        fun bind(viewModel: TasksViewModel, task: Task) {
+            checkBox.isChecked = task.isCompleted
+            titleText.text = task.titleForList
+
+            if (task.isCompleted) {
+                titleText.paintFlags = titleText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                titleText.paintFlags = titleText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            }
+
+            checkBox.setOnClickListener {
+                viewModel.completeTask(task, checkBox.isChecked)
+            }
+
+            itemLayout.setOnClickListener {
+                viewModel.openTask(task.id)
+            }
+
         }
 
         companion object {
             fun from(parent: ViewGroup): ViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val binding = TaskItemBinding.inflate(layoutInflater, parent, false)
+                val root = layoutInflater.inflate(R.layout.task_item, parent, false)
 
-                return ViewHolder(binding)
+                return ViewHolder(root)
             }
         }
     }

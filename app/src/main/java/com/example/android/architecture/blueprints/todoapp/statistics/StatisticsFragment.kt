@@ -19,11 +19,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.databinding.DataBindingUtil
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.databinding.StatisticsFragBinding
+import com.example.android.architecture.blueprints.todoapp.ScrollChildSwipeRefreshLayout
 import com.example.android.architecture.blueprints.todoapp.util.getViewModelFactory
 import com.example.android.architecture.blueprints.todoapp.util.setupRefreshLayout
 
@@ -32,25 +34,71 @@ import com.example.android.architecture.blueprints.todoapp.util.setupRefreshLayo
  */
 class StatisticsFragment : Fragment() {
 
-    private lateinit var viewDataBinding: StatisticsFragBinding
 
     private val viewModel by viewModels<StatisticsViewModel> { getViewModelFactory() }
+
+    private lateinit var swipeRefreshLayout: ScrollChildSwipeRefreshLayout
+    private lateinit var statisticsLayout: LinearLayout
+    private lateinit var noTasksTextView: TextView
+    private lateinit var statActiveText : TextView
+    private lateinit var statCompletedText : TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        viewDataBinding = DataBindingUtil.inflate(
-            inflater, R.layout.statistics_frag, container,
-            false
-        )
-        return viewDataBinding.root
+        val root = inflater.inflate(R.layout.statistics_frag, container, false)
+
+        swipeRefreshLayout = root.findViewById(R.id.refresh_layout)
+        statisticsLayout = root.findViewById(R.id.statistics_layout)
+        noTasksTextView = root.findViewById(R.id.no_tasks_text)
+        statActiveText = root.findViewById(R.id.stats_active_text)
+        statCompletedText = root.findViewById(R.id.stats_completed_text)
+
+        return root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewDataBinding.viewmodel = viewModel
-        viewDataBinding.lifecycleOwner = this.viewLifecycleOwner
-        this.setupRefreshLayout(viewDataBinding.refreshLayout)
+        setupViews()
+        this.setupRefreshLayout(swipeRefreshLayout)
+    }
+
+    private fun setupViews() {
+        viewModel.dataLoading.observe(this, Observer { isLoading ->
+            swipeRefreshLayout.isRefreshing = isLoading
+
+            if (isLoading) {
+                statisticsLayout.visibility = View.GONE
+            } else {
+                statisticsLayout.visibility = View.VISIBLE
+            }
+        })
+
+        swipeRefreshLayout.setOnRefreshListener {
+            viewModel.refresh()
+        }
+
+        viewModel.empty.observe(this, Observer { isEmpty ->
+            if (isEmpty) {
+                noTasksTextView.visibility = View.VISIBLE
+                statActiveText.visibility = View.GONE
+                statCompletedText.visibility = View.GONE
+            } else {
+                noTasksTextView.visibility = View.GONE
+                statActiveText.visibility = View.VISIBLE
+                statCompletedText.visibility = View.VISIBLE
+            }
+        })
+
+        viewModel.completedTasksPercent.observe(this, Observer {completedPercent ->
+            statCompletedText.text = getString(R.string.statistics_completed_tasks,
+                completedPercent)
+        })
+
+        viewModel.activeTasksPercent.observe(this, Observer {activePercent ->
+            statActiveText.text = getString(R.string.statistics_active_tasks,
+                activePercent)
+        })
     }
 }

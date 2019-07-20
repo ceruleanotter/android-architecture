@@ -22,13 +22,18 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.android.architecture.blueprints.todoapp.EventObserver
 import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.databinding.TaskdetailFragBinding
+import com.example.android.architecture.blueprints.todoapp.ScrollChildSwipeRefreshLayout
 import com.example.android.architecture.blueprints.todoapp.tasks.DELETE_RESULT_OK
 import com.example.android.architecture.blueprints.todoapp.util.getViewModelFactory
 import com.example.android.architecture.blueprints.todoapp.util.setupRefreshLayout
@@ -39,18 +44,67 @@ import com.google.android.material.snackbar.Snackbar
  * Main UI for the task detail screen.
  */
 class TaskDetailFragment : Fragment() {
-    private lateinit var viewDataBinding: TaskdetailFragBinding
 
     private val args: TaskDetailFragmentArgs by navArgs()
 
     private val viewModel by viewModels<TaskDetailViewModel> { getViewModelFactory() }
+
+    private lateinit var swipeRefreshLayout: ScrollChildSwipeRefreshLayout
+    private lateinit var noTaskLayout: LinearLayout
+    private lateinit var noTaskTextView: TextView
+
+    private lateinit var taskLinearLayout: RelativeLayout
+
+    private lateinit var taskCompleteCheckBox : CheckBox
+    private lateinit var taskTitleText : TextView
+    private lateinit var taskDescriptionText : TextView
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         setupFab()
         view?.setupSnackbar(this, viewModel.snackbarText, Snackbar.LENGTH_SHORT)
         setupNavigation()
-        this.setupRefreshLayout(viewDataBinding.refreshLayout)
+        this.setupRefreshLayout(swipeRefreshLayout)
+        setupViews()
+    }
+
+    private fun setupViews() {
+        viewModel.isDataAvailable.observe(this, Observer { dataIsAvailable ->
+            if (dataIsAvailable) {
+                noTaskLayout.visibility = View.GONE
+                taskLinearLayout.visibility = View.VISIBLE
+            } else {
+                noTaskLayout.visibility = View.VISIBLE
+                taskLinearLayout.visibility = View.GONE
+            }
+        })
+
+        viewModel.dataLoading.observe(this, Observer { isLoading ->
+            swipeRefreshLayout.isRefreshing = isLoading
+
+            if (isLoading) {
+                noTaskTextView.visibility = View.GONE
+            } else {
+                noTaskTextView.visibility = View.VISIBLE
+            }
+        })
+
+        swipeRefreshLayout.setOnRefreshListener {
+            viewModel.refresh()
+        }
+
+        viewModel.completed.observe(this, Observer { checked ->
+            taskCompleteCheckBox.isChecked = checked
+        })
+
+        viewModel.task.observe(this, Observer { task ->
+            taskTitleText.text = task?.title
+            taskDescriptionText.text = task?.description
+        })
+
+        taskCompleteCheckBox.setOnClickListener { _ ->
+            viewModel.setCompleted(taskCompleteCheckBox.isChecked)
+        }
     }
 
     private fun setupNavigation() {
@@ -80,16 +134,21 @@ class TaskDetailFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.taskdetail_frag, container, false)
-        viewDataBinding = TaskdetailFragBinding.bind(view).apply {
-            viewmodel = viewModel
-        }
-        viewDataBinding.lifecycleOwner = this.viewLifecycleOwner
+        val root = inflater.inflate(R.layout.taskdetail_frag, container, false)
+
+        swipeRefreshLayout = root.findViewById(R.id.refresh_layout)
+        noTaskLayout = root.findViewById(R.id.no_task_linear_layout)
+        noTaskTextView = root.findViewById(R.id.no_task_text)
+
+        taskLinearLayout = root.findViewById(R.id.task_layout)
+        taskCompleteCheckBox = root.findViewById(R.id.task_detail_complete_checkbox)
+        taskTitleText = root.findViewById(R.id.task_detail_title_text)
+        taskDescriptionText = root.findViewById(R.id.task_detail_description_text)
 
         viewModel.start(args.taskId)
 
         setHasOptionsMenu(true)
-        return view
+        return root
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

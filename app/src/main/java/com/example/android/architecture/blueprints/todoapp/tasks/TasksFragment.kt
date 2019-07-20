@@ -17,21 +17,22 @@
 package com.example.android.architecture.blueprints.todoapp.tasks
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.RecyclerView
 import com.example.android.architecture.blueprints.todoapp.EventObserver
 import com.example.android.architecture.blueprints.todoapp.R
+import com.example.android.architecture.blueprints.todoapp.ScrollChildSwipeRefreshLayout
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.databinding.TasksFragBinding
 import com.example.android.architecture.blueprints.todoapp.util.getViewModelFactory
 import com.example.android.architecture.blueprints.todoapp.util.setupRefreshLayout
 import com.example.android.architecture.blueprints.todoapp.util.setupSnackbar
@@ -48,19 +49,34 @@ class TasksFragment : Fragment() {
 
     private val args: TasksFragmentArgs by navArgs()
 
-    private lateinit var viewDataBinding: TasksFragBinding
-
     private lateinit var listAdapter: TasksAdapter
+
+    private lateinit var swipeRefreshLayout: ScrollChildSwipeRefreshLayout
+    private lateinit var tasksLinearLayout: LinearLayout
+    private lateinit var filteringText: TextView
+    private lateinit var taskListRecyclerView: RecyclerView
+
+    private lateinit var noTasksLayout: LinearLayout
+    private lateinit var noTasksIcon: ImageView
+    private lateinit var noTasksTextView: TextView
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        viewDataBinding = TasksFragBinding.inflate(inflater, container, false).apply {
-            viewmodel = viewModel
-        }
         setHasOptionsMenu(true)
-        return viewDataBinding.root
+        val root = inflater.inflate(R.layout.tasks_frag, container, false)
+
+        swipeRefreshLayout = root.findViewById(R.id.refresh_layout)
+        tasksLinearLayout = root.findViewById(R.id.tasks_linear_layout)
+        filteringText = root.findViewById(R.id.filtering_text)
+        taskListRecyclerView = root.findViewById(R.id.tasks_list)
+        noTasksLayout = root.findViewById(R.id.no_tasks_layout)
+        noTasksIcon = root.findViewById(R.id.no_tasks_icon)
+        noTasksTextView = root.findViewById(R.id.no_tasks_text)
+
+        return root
     }
 
     override fun onOptionsItemSelected(item: MenuItem) =
@@ -88,12 +104,51 @@ class TasksFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         // Set the lifecycle owner to the lifecycle of the view
-        viewDataBinding.lifecycleOwner = this.viewLifecycleOwner
         setupSnackbar()
         setupListAdapter()
-        setupRefreshLayout(viewDataBinding.refreshLayout, viewDataBinding.tasksList)
+        setupRefreshLayout(swipeRefreshLayout, taskListRecyclerView)
         setupNavigation()
         setupFab()
+        setupViews()
+    }
+
+    private fun setupViews() {
+        viewModel.empty.observe(this, Observer { isEmpty ->
+            if (isEmpty) {
+                tasksLinearLayout.visibility = View.GONE
+                noTasksLayout.visibility = View.VISIBLE
+            } else {
+                tasksLinearLayout.visibility = View.VISIBLE
+                noTasksLayout.visibility = View.GONE
+            }
+        })
+
+        viewModel.currentFilteringLabel.observe(this, Observer { filterLabelResource ->
+            filteringText.text = getString(filterLabelResource)
+        })
+
+        viewModel.items.observe(this, Observer { items ->
+            items?.let {
+                (taskListRecyclerView.adapter as TasksAdapter).submitList(items)
+            }
+        })
+
+        viewModel.noTaskIconRes.observe(this, Observer {icon ->
+            noTasksIcon.setImageDrawable(ContextCompat.getDrawable(requireContext(), icon))
+        })
+
+        viewModel.noTasksLabel.observe(this, Observer {label ->
+            noTasksTextView.text = getString(label)
+        })
+
+        viewModel.dataLoading.observe(this, Observer {isLoading ->
+            swipeRefreshLayout.isRefreshing = isLoading
+        })
+
+        swipeRefreshLayout.setOnRefreshListener {
+            viewModel.refresh()
+        }
+
     }
 
     private fun setupNavigation() {
@@ -154,12 +209,7 @@ class TasksFragment : Fragment() {
     }
 
     private fun setupListAdapter() {
-        val viewModel = viewDataBinding.viewmodel
-        if (viewModel != null) {
-            listAdapter = TasksAdapter(viewModel)
-            viewDataBinding.tasksList.adapter = listAdapter
-        } else {
-            Timber.w("ViewModel not initialized when attempting to set up adapter.")
-        }
+        listAdapter = TasksAdapter(viewModel)
+        taskListRecyclerView.adapter = listAdapter
     }
 }

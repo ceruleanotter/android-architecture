@@ -14,45 +14,33 @@
   ~ limitations under the License.
   -->
 
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <data>
-
-        <import type="android.view.View" />
-
-        <variable
-            name="viewmodel"
-            type="com.example.android.architecture.blueprints.todoapp.addedittask.AddEditTaskViewModel" />
-    </data>
-
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/coordinator_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.example.android.architecture.blueprints.todoapp.ScrollChildSwipeRefreshLayout
+    <com.example.android.architecture.blueprints.todoapp.ScrollChildSwipeRefreshLayout
             android:id="@+id/refresh_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:enabled="@{viewmodel.dataLoading}"
-            app:refreshing="@{viewmodel.dataLoading}">
+            android:layout_height="match_parent">
 
-            <ScrollView
+        <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <LinearLayout
+            <LinearLayout
+                    android:id="@+id/add_task_linear_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:paddingLeft="@dimen/activity_horizontal_margin"
                     android:paddingTop="@dimen/activity_vertical_margin"
                     android:paddingRight="@dimen/activity_horizontal_margin"
-                    android:paddingBottom="@dimen/activity_vertical_margin"
-                    android:visibility="@{viewmodel.dataLoading ? View.GONE : View.VISIBLE}">
+                    android:paddingBottom="@dimen/activity_vertical_margin">
 
-                    <EditText
+                <EditText
                         android:id="@+id/add_task_title_edit_text"
                         android:background="@null"
                         android:layout_width="match_parent"
@@ -60,33 +48,29 @@
                         android:hint="@string/title_hint"
                         android:imeOptions="flagNoExtractUi"
                         android:maxLines="1"
-                        android:text="@={viewmodel.title}"
                         android:textStyle="bold"
                         android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
-                    <EditText
+                <EditText
                         android:id="@+id/add_task_description_edit_text"
                         android:background="@null"
                         android:layout_width="match_parent"
                         android:layout_height="350dp"
                         android:gravity="top"
                         android:hint="@string/description_hint"
-                        android:imeOptions="flagNoExtractUi"
-                        android:text="@={viewmodel.description}" />
+                        android:imeOptions="flagNoExtractUi" />
 
-                </LinearLayout>
-            </ScrollView>
-        </com.example.android.architecture.blueprints.todoapp.ScrollChildSwipeRefreshLayout>
+            </LinearLayout>
+        </ScrollView>
+    </com.example.android.architecture.blueprints.todoapp.ScrollChildSwipeRefreshLayout>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/save_task_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/fab_margin"
             android:src="@drawable/ic_done"
-            android:onClick="@{() -> viewmodel.saveTask()}"
             app:fabSize="normal"
             app:layout_anchor="@id/refresh_layout"
             app:layout_anchorGravity="bottom|right|end" />
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
-</layout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
