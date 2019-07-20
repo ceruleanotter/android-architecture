@@ -97,7 +97,9 @@ class AddEditTaskFragment : Fragment() {
         })
 
         saveTaskFab.setOnClickListener {
-            viewModel.saveTask()
+            viewModel.saveTask(
+                addTaskTitleEditText.text.toString(),
+                addTaskDescriptionEditText.text.toString())
         }
     }
 

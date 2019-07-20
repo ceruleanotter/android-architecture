@@ -100,10 +100,7 @@ class AddEditTaskViewModel(
     }
 
     // Called when clicking on fab.
-    fun saveTask() {
-        val currentTitle = title.value
-        val currentDescription = description.value
-
+    fun saveTask(currentTitle: String?, currentDescription: String?) {
         if (currentTitle == null || currentDescription == null) {
             _snackbarText.value = Event(R.string.empty_task_message)
             return
