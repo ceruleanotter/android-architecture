@@ -74,6 +74,11 @@ dependencies {
     testImplementation "androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion"
     testImplementation "androidx.test:rules:$androidXTestRulesVersion"
 
+    // AndroidX Test - Instrumented testing
+    androidTestImplementation "androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
+
+
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     implementation "androidx.fragment:fragment-ktx:$fragmentKtxVersion"
