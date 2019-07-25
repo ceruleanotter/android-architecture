@@ -68,7 +68,7 @@
                         android:id="@+id/add_task_description_edit_text"
                         android:background="@null"
                         android:layout_width="match_parent"
-                        android:layout_height="350dp"
+                        android:layout_height="150dp"
                         android:gravity="top"
                         android:hint="@string/description_hint"
                         android:imeOptions="flagNoExtractUi"
