@@ -15,7 +15,7 @@
  */
 package com.example.android.architecture.blueprints.todoapp.data.source
 
-import android.content.Context
+import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.room.Room
 import com.example.android.architecture.blueprints.todoapp.data.Result
@@ -33,33 +33,32 @@ import kotlinx.coroutines.withContext
 /**
  * TODO
  */
-class DefaultTasksRepository(
-    private val tasksRemoteDataSource: TasksDataSource,
-    private val tasksLocalDataSource: TasksDataSource,
+class DefaultTasksRepository private constructor(application: Application) {
+
+    private val tasksRemoteDataSource: TasksDataSource
+    private val tasksLocalDataSource: TasksDataSource
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
-) {
 
     companion object {
         @Volatile
         private var INSTANCE: DefaultTasksRepository? = null
 
-        fun getRepository(context: Context): DefaultTasksRepository {
-            synchronized(this) {
-                return INSTANCE ?:
-                INSTANCE ?: createTasksRepository(context)
+        fun getRepository(app: Application): DefaultTasksRepository {
+            return INSTANCE ?: synchronized(this) {
+                DefaultTasksRepository(app).also {
+                    INSTANCE = it
+                }
             }
         }
+    }
 
-        private fun createTasksRepository(context: Context): DefaultTasksRepository {
-            val database = Room.databaseBuilder(context.applicationContext,
-                ToDoDatabase::class.java, "Tasks.db")
-                .build()
+    init {
+        val database = Room.databaseBuilder(application.applicationContext,
+            ToDoDatabase::class.java, "Tasks.db")
+            .build()
 
-            return DefaultTasksRepository(
-                TasksRemoteDataSource,
-                TasksLocalDataSource(database.taskDao())
-            )
-        }
+        tasksRemoteDataSource = TasksRemoteDataSource
+        tasksLocalDataSource = TasksLocalDataSource(database.taskDao())
     }
 
     suspend fun getTasks(forceUpdate: Boolean): Result<List<Task>> {
