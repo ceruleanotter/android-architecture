@@ -16,19 +16,23 @@
 
 package com.example.android.architecture.blueprints.todoapp.tasks
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.assertLiveDataEventTriggered
-import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
-import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.After
 import org.junit.Test
 
 import org.junit.Before
+import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
@@ -39,11 +43,91 @@ class TasksViewModelTest {
     // Subject under test
     private lateinit var tasksViewModel: TasksViewModel
 
+    // Executes each task synchronously using Architecture Components.
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
+
+    // Set the main coroutines dispatcher for unit testing.
+    @ExperimentalCoroutinesApi
+    @get:Rule
+    var mainCoroutineRule = MainCoroutineRule()
+
+//    @ExperimentalCoroutinesApi
+//    val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()
+
     @Before
     fun setupViewModel() {
         tasksViewModel = TasksViewModel(ApplicationProvider.getApplicationContext())
     }
 
+//    @ExperimentalCoroutinesApi
+//    @Before
+//    fun setupDispatcher() {
+//        Dispatchers.setMain(testDispatcher)
+//    }
+//
+//    @ExperimentalCoroutinesApi
+//    @After
+//    fun tearDownDispatcher() {
+//        Dispatchers.resetMain()
+//        testDispatcher.cleanupTestCoroutines()
+//    }
+
+
+    @Test
+    fun loadAllTasksFromRepository_loadingTogglesAndDataLoaded() {
+        // Pause dispatcher so we can verify initial values
+        mainCoroutineRule.pauseDispatcher()
+
+        // Given an initialized TasksViewModel with initialized tasks
+        // When loading of Tasks is requested
+        tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
+
+        // Trigger loading of tasks
+        tasksViewModel.loadTasks(true)
+        // Observe the items to keep LiveData emitting
+        tasksViewModel.items.observeForever { }
+
+        // Then progress indicator is shown
+        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(true))
+
+        // Execute pending coroutines actions
+        mainCoroutineRule.resumeDispatcher()
+
+        // Then progress indicator is hidden
+        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+
+        // And data correctly loaded
+        //assertThat(tasksViewModel.items.awaitNextValue()).hasSize(3)
+    }
+
+    // Attempt to execute without rule
+//    @ExperimentalCoroutinesApi
+//    @Test
+//    fun loadAllTasksFromRepository_loadingTogglesAndDataLoaded() = runBlockingTest {
+//
+//        // Pause dispatcher so we can verify initial values
+//        pauseDispatcher()
+//
+//        // Given an initialized TasksViewModel with initialized tasks
+//        // When loading of Tasks is requested
+//        tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
+//
+//        // Trigger loading of tasks
+//        tasksViewModel.loadTasks(true)
+//        // Observe the items to keep LiveData emitting
+//        tasksViewModel.items.observeForever { }
+//
+//        // Then progress indicator is shown
+//        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(true))
+//
+//        // Execute pending coroutines actions
+//        resumeDispatcher()
+//
+//        // Then progress indicator is hidden
+//        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+//
+//    }
 
     @Test
     fun clickOnFab_showsAddTaskUi() {

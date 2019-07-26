@@ -55,6 +55,8 @@ class DefaultTasksRepository private constructor(application: Application) {
     init {
         val database = Room.databaseBuilder(application.applicationContext,
             ToDoDatabase::class.java, "Tasks.db")
+                // Just trying to get test integration test to run
+            .allowMainThreadQueries()
             .build()
 
         tasksRemoteDataSource = TasksRemoteDataSource
