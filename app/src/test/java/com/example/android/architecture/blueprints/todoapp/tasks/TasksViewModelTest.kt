@@ -98,4 +98,13 @@ class TasksViewModelTest {
         assertSnackbarMessage(tasksViewModel.snackbarText, R.string.successfully_deleted_task_message)
     }
 
+    @Test
+    fun getTasksAddViewVisible() {
+        // When the filter type is ALL_TASKS
+        tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
+
+        // Then the "Add task" action is visible
+        assertThat(tasksViewModel.tasksAddViewVisible.awaitNextValue(), `is`(true))
+    }
+
 }
