@@ -117,25 +117,25 @@ class TasksViewModelTest {
         assertThat(tasksViewModel.items.awaitNextValue(), IsCollectionWithSize.hasSize(2))
     }
 
-//    @Test
-//    fun loadTasks_error() {
-//        // Make the repository return errors
-//        tasksRepository.setReturnError(true)
-//
-//        // Load tasks
-//        tasksViewModel.loadTasks(true)
-//        // Observe the items to keep LiveData emitting
-//        tasksViewModel.items.observeForever { }
-//
-//        // Then progress indicator is hidden
-//        assertThat(tasksViewModel.dataLoading.awaitNextValue()).isFalse()
-//
-//        // And the list of items is empty
-//        assertThat(tasksViewModel.items.awaitNextValue()).isEmpty()
-//
-//        // And the snackbar updated
-//        assertSnackbarMessage(tasksViewModel.snackbarText, R.string.loading_tasks_error)
-//    }
+    @Test
+    fun loadTasks_error() {
+        // Make the repository return errors
+        tasksRepository.setReturnError(true)
+
+        // Load tasks
+        tasksViewModel.loadTasks(true)
+        // Observe the items to keep LiveData emitting
+        tasksViewModel.items.observeForever { }
+
+        // Then progress indicator is hidden
+        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+
+        // And the list of items is empty
+        assertThat(tasksViewModel.items.awaitNextValue(), IsEmptyCollection.empty())
+
+        // And the snackbar updated
+        assertSnackbarMessage(tasksViewModel.snackbarText, R.string.loading_tasks_error)
+    }
 
     @Test
     fun clickOnFab_showsAddTaskUi() {
@@ -172,7 +172,7 @@ class TasksViewModelTest {
         val completedTasks = allTasks.filter { it.isCompleted }
 
         // Verify there are no completed tasks left
-        assertThat(completedTasks, IsEmptyCollection())
+        assertThat(completedTasks, IsEmptyCollection.empty())
 
         // Verify active task is not cleared
         assertThat(allTasks, IsCollectionWithSize.hasSize(1))
