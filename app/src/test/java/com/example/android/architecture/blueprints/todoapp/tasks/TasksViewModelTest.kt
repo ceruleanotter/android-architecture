@@ -30,6 +30,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.collection.IsCollectionWithSize
+import org.hamcrest.collection.IsEmptyCollection
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -94,7 +96,7 @@ class TasksViewModelTest {
         assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
 
         // And data correctly loaded
-        assertThat(tasksViewModel.items.awaitNextValue().size, `is`(1))
+        assertThat(tasksViewModel.items.awaitNextValue(),IsCollectionWithSize.hasSize(1))
     }
 
     @Test
@@ -112,7 +114,7 @@ class TasksViewModelTest {
         assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
 
         // And data correctly loaded
-        assertThat(tasksViewModel.items.awaitNextValue().size, `is`(2))
+        assertThat(tasksViewModel.items.awaitNextValue(), IsCollectionWithSize.hasSize(2))
     }
 
 //    @Test
@@ -157,29 +159,29 @@ class TasksViewModelTest {
         assertLiveDataEventTriggered(tasksViewModel.openTaskEvent, taskId)
     }
 
-//    @Test
-//    fun clearCompletedTasks_clearsTasks() = mainCoroutineRule.runBlockingTest {
-//        // When completed tasks are cleared
-//        tasksViewModel.clearCompletedTasks()
-//
-//        // Fetch tasks
-//        tasksViewModel.loadTasks(true)
-//
-//        // Fetch tasks
-//        val allTasks = tasksViewModel.items.awaitNextValue()
-//        val completedTasks = allTasks.filter { it.isCompleted }
-//
-//        // Verify there are no completed tasks left
-//        assertThat(completedTasks).isEmpty()
-//
-//        // Verify active task is not cleared
-//        assertThat(allTasks).hasSize(1)
-//
-//        // Verify snackbar is updated
-//        assertSnackbarMessage(
-//            tasksViewModel.snackbarText, R.string.completed_tasks_cleared
-//        )
-//    }
+    @Test
+    fun clearCompletedTasks_clearsTasks() {
+        // When completed tasks are cleared
+        tasksViewModel.clearCompletedTasks()
+
+        // Fetch tasks
+        tasksViewModel.loadTasks(true)
+
+        // Fetch tasks
+        val allTasks = tasksViewModel.items.awaitNextValue()
+        val completedTasks = allTasks.filter { it.isCompleted }
+
+        // Verify there are no completed tasks left
+        assertThat(completedTasks, IsEmptyCollection())
+
+        // Verify active task is not cleared
+        assertThat(allTasks, IsCollectionWithSize.hasSize(1))
+
+        // Verify snackbar is updated
+        assertSnackbarMessage(
+            tasksViewModel.snackbarText, R.string.completed_tasks_cleared
+        )
+    }
 
     @Test
     fun showEditResultMessages_editOk_snackbarUpdated() {

@@ -78,7 +78,9 @@ class FakeRepository : TasksRepository {
     }
 
     override suspend fun clearCompletedTasks() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        tasksServiceData = tasksServiceData.filterValues {
+            !it.isCompleted
+        } as LinkedHashMap<String, Task>
     }
 
     override suspend fun deleteAllTasks() {
