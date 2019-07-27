@@ -18,6 +18,7 @@ package com.example.android.architecture.blueprints.todoapp.tasks
 import android.app.Application
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.*
 import com.example.android.architecture.blueprints.todoapp.Event
 import com.example.android.architecture.blueprints.todoapp.R
@@ -71,10 +72,12 @@ class TasksViewModel(application: Application) : AndroidViewModel(application) {
     private val _snackbarText = MutableLiveData<Event<Int>>()
     val snackbarText: LiveData<Event<Int>> = _snackbarText
 
-    private var currentFiltering = TasksFilterType.ALL_TASKS
+    @VisibleForTesting
+    var currentFiltering = TasksFilterType.ALL_TASKS
 
     // Not used at the moment
-    private val isDataLoadingError = MutableLiveData<Boolean>()
+    @VisibleForTesting
+    val isDataLoadingError = MutableLiveData<Boolean>()
 
     private val _openTaskEvent = MutableLiveData<Event<String>>()
     val openTaskEvent: LiveData<Event<String>> = _openTaskEvent
@@ -185,7 +188,8 @@ class TasksViewModel(application: Application) : AndroidViewModel(application) {
         _snackbarText.value = Event(message)
     }
 
-    private fun filterTasks(tasksResult: Result<List<Task>>): LiveData<List<Task>> {
+    @VisibleForTesting
+    fun filterTasks(tasksResult: Result<List<Task>>): LiveData<List<Task>> {
         // TODO: This is a good case for liveData builder. Replace when stable.
         val result = MutableLiveData<List<Task>>()
 
