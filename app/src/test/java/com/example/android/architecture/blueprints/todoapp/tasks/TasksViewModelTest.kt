@@ -20,6 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.*
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
@@ -29,6 +30,7 @@ import org.junit.Test
 /**
  * Unit tests for the implementation of [TasksViewModel]
  */
+@ExperimentalCoroutinesApi
 class TasksViewModelTest {
 
     // Subject under test
