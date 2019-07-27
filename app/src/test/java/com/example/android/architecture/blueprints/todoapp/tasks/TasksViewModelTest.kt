@@ -88,10 +88,10 @@ class TasksViewModelTest {
         tasksViewModel.items.observeForever { }
 
         // Then progress indicator is hidden
-        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+        assertThat(tasksViewModel.dataLoading.value, `is`(false))
 
         // And data correctly loaded
-        assertThat(tasksViewModel.items.awaitNextValue().size, `is`(1))
+        assertThat(tasksViewModel.items.value?.size, `is`(1))
     }
 
     @Test
@@ -106,10 +106,10 @@ class TasksViewModelTest {
         tasksViewModel.items.observeForever { }
 
         // Then progress indicator is hidden
-        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+        assertThat(tasksViewModel.dataLoading.value, `is`(false))
 
         // And data correctly loaded
-        assertThat(tasksViewModel.items.awaitNextValue().size, `is`(2))
+        assertThat(tasksViewModel.items.value?.size, `is`(2))
     }
 
     @Test
@@ -118,9 +118,9 @@ class TasksViewModelTest {
         tasksViewModel.addNewTask()
 
         // Then the event is triggered
-        val value = tasksViewModel.newTaskEvent.awaitNextValue()
+        val value = tasksViewModel.newTaskEvent.value
         assertThat(
-            value.getContentIfNotHandled(), (not(nullValue()))
+            value?.getContentIfNotHandled(), (not(nullValue()))
         )
     }
 
@@ -171,7 +171,7 @@ class TasksViewModelTest {
         tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
 
         // Then the "Add task" action is visible
-        assertThat(tasksViewModel.tasksAddViewVisible.awaitNextValue(), `is`(true))
+        assertThat(tasksViewModel.tasksAddViewVisible.value, `is`(true))
     }
 
 }

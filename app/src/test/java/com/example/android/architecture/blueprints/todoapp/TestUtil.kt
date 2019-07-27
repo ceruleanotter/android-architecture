@@ -23,11 +23,11 @@ fun assertLiveDataEventTriggered(
     liveData: LiveData<Event<String>>,
     taskId: String
 ) {
-    val value = liveData.awaitNextValue()
-    assertEquals(value.getContentIfNotHandled(), taskId)
+    val value = liveData.value
+    assertEquals(value?.getContentIfNotHandled(), taskId)
 }
 
 fun assertSnackbarMessage(snackbarLiveData: LiveData<Event<Int>>, messageId: Int) {
-    val value: Event<Int> = snackbarLiveData.awaitNextValue()
-    assertEquals(value.getContentIfNotHandled(), messageId)
+    val value: Event<Int>? = snackbarLiveData.value
+    assertEquals(value?.getContentIfNotHandled(), messageId)
 }

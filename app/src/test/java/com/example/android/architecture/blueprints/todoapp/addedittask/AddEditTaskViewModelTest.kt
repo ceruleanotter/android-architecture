@@ -15,11 +15,13 @@
  */
 package com.example.android.architecture.blueprints.todoapp.addedittask
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import com.example.android.architecture.blueprints.todoapp.R.string
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -32,6 +34,10 @@ class AddEditTaskViewModelTest {
 
     // Subject under test
     private lateinit var addEditTaskViewModel: AddEditTaskViewModel
+
+    // Executes each task synchronously using Architecture Components.
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
 
     private val task = Task("Title1", "Description1")
 

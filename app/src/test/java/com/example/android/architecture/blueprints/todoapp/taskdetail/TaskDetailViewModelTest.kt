@@ -15,14 +15,15 @@
  */
 package com.example.android.architecture.blueprints.todoapp.taskdetail
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.Rule
 
 
 /**
@@ -33,6 +34,10 @@ class TaskDetailViewModelTest {
 
     // Subject under test
     private lateinit var taskDetailViewModel: TaskDetailViewModel
+
+    // Executes each task synchronously using Architecture Components.
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
 
     @Before
     fun setupViewModel() {
@@ -57,9 +62,9 @@ class TaskDetailViewModelTest {
         this.taskDetailViewModel.editTask()
 
         // Then the event is triggered
-        val value = this.taskDetailViewModel.editTaskEvent.awaitNextValue()
+        val value = this.taskDetailViewModel.editTaskEvent.value
         assertThat(
-            value.getContentIfNotHandled(), (not(nullValue()))
+            value?.getContentIfNotHandled(), (not(nullValue()))
         )
     }
 
