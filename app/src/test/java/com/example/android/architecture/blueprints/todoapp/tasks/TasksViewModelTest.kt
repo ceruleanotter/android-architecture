@@ -115,6 +115,26 @@ class TasksViewModelTest {
         assertThat(tasksViewModel.items.awaitNextValue().size, `is`(2))
     }
 
+//    @Test
+//    fun loadTasks_error() {
+//        // Make the repository return errors
+//        tasksRepository.setReturnError(true)
+//
+//        // Load tasks
+//        tasksViewModel.loadTasks(true)
+//        // Observe the items to keep LiveData emitting
+//        tasksViewModel.items.observeForever { }
+//
+//        // Then progress indicator is hidden
+//        assertThat(tasksViewModel.dataLoading.awaitNextValue()).isFalse()
+//
+//        // And the list of items is empty
+//        assertThat(tasksViewModel.items.awaitNextValue()).isEmpty()
+//
+//        // And the snackbar updated
+//        assertSnackbarMessage(tasksViewModel.snackbarText, R.string.loading_tasks_error)
+//    }
+
     @Test
     fun clickOnFab_showsAddTaskUi() {
         // When adding a new task
@@ -136,6 +156,30 @@ class TasksViewModelTest {
         // Then the event is triggered
         assertLiveDataEventTriggered(tasksViewModel.openTaskEvent, taskId)
     }
+
+//    @Test
+//    fun clearCompletedTasks_clearsTasks() = mainCoroutineRule.runBlockingTest {
+//        // When completed tasks are cleared
+//        tasksViewModel.clearCompletedTasks()
+//
+//        // Fetch tasks
+//        tasksViewModel.loadTasks(true)
+//
+//        // Fetch tasks
+//        val allTasks = tasksViewModel.items.awaitNextValue()
+//        val completedTasks = allTasks.filter { it.isCompleted }
+//
+//        // Verify there are no completed tasks left
+//        assertThat(completedTasks).isEmpty()
+//
+//        // Verify active task is not cleared
+//        assertThat(allTasks).hasSize(1)
+//
+//        // Verify snackbar is updated
+//        assertSnackbarMessage(
+//            tasksViewModel.snackbarText, R.string.completed_tasks_cleared
+//        )
+//    }
 
     @Test
     fun showEditResultMessages_editOk_snackbarUpdated() {
@@ -169,6 +213,44 @@ class TasksViewModelTest {
     }
 
     @Test
+    fun completeTask_dataAndSnackbarUpdated() {
+        // With a repository that has an active task
+        val task = Task("Title", "Description")
+        tasksRepository.addTasks(task)
+
+        // Complete task
+        tasksViewModel.completeTask(task, true)
+
+        // Verify the task is completed
+        // TODO why not used getTask to check this?
+        assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted, `is`(true))
+
+        // The snackbar is updated
+        assertSnackbarMessage(
+            tasksViewModel.snackbarText, R.string.task_marked_complete
+        )
+    }
+
+    @Test
+    fun activateTask_dataAndSnackbarUpdated() {
+        // With a repository that has a completed task
+        val task = Task("Title", "Description", true)
+        tasksRepository.addTasks(task)
+
+        // Activate task
+        tasksViewModel.completeTask(task, false)
+
+        // TODO why not used getTask to check this?
+        // Verify the task is active
+        assertThat(tasksRepository.tasksServiceData[task.id]?.isActive, `is`(true))
+
+        // The snackbar is updated
+        assertSnackbarMessage(
+            tasksViewModel.snackbarText, R.string.task_marked_active
+        )
+    }
+
+    @Test
     fun getTasksAddViewVisible() {
         // When the filter type is ALL_TASKS
         tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
@@ -176,5 +258,4 @@ class TasksViewModelTest {
         // Then the "Add task" action is visible
         assertThat(tasksViewModel.tasksAddViewVisible.awaitNextValue(), `is`(true))
     }
-
 }

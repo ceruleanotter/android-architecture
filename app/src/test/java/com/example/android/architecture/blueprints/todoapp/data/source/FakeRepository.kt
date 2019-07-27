@@ -60,7 +60,8 @@ class FakeRepository : TasksRepository {
     }
 
     override suspend fun completeTask(task: Task) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val completedTask = Task(task.title, task.description, true, task.id)
+        tasksServiceData[task.id] = completedTask
     }
 
     override suspend fun completeTask(taskId: String) {
@@ -68,7 +69,8 @@ class FakeRepository : TasksRepository {
     }
 
     override suspend fun activateTask(task: Task) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val activeTask = Task(task.title, task.description, false, task.id)
+        tasksServiceData[task.id] = activeTask
     }
 
     override suspend fun activateTask(taskId: String) {
