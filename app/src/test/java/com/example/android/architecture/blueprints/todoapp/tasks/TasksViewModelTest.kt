@@ -17,33 +17,28 @@
 package com.example.android.architecture.blueprints.todoapp.tasks
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.assertLiveDataEventTriggered
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
 import com.example.android.architecture.blueprints.todoapp.awaitNextValue
-import com.example.android.architecture.blueprints.todoapp.data.Result
 import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
 import org.hamcrest.CoreMatchers.*
-
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Test
-
 import org.junit.Before
 import org.junit.Rule
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
+import org.junit.Test
 
-@RunWith(RobolectricTestRunner::class)
-
+/**
+ * Unit tests for the implementation of [TasksViewModel]
+ */
 class TasksViewModelTest {
 
     // Subject under test
     private lateinit var tasksViewModel: TasksViewModel
-    private lateinit var taskList: List<Task>
-    private val task1 = Task("Title1", "Description1")
-    private val task2 = Task("Title2", "Description2", true)
-    private val task3 = Task("Title3", "Description3", true)
+
+    // Use a fake repository to be injected into the viewmodel
+    private lateinit var tasksRepository: FakeRepository
 
     // Executes each task synchronously using Architecture Components.
     @get:Rule
@@ -51,13 +46,51 @@ class TasksViewModelTest {
 
     @Before
     fun setupViewModel() {
-        tasksViewModel = TasksViewModel(ApplicationProvider.getApplicationContext())
+        // We initialise the tasks to 3, with one active and two completed
+        tasksRepository = FakeRepository()
+        val task1 = Task("Title1", "Description1")
+        val task2 = Task("Title2", "Description2", true)
+        val task3 = Task("Title3", "Description3", true)
+        tasksRepository.addTasks(task1, task2, task3)
 
-        taskList = listOf(
-            task1, task2, task3
-        )
+        tasksViewModel = TasksViewModel(tasksRepository)
     }
 
+    @Test
+    fun loadActiveTasksFromRepositoryAndLoadIntoView() {
+        // Given an initialized TasksViewModel with initialized tasks
+        // When loading of Tasks is requested
+        tasksViewModel.setFiltering(TasksFilterType.ACTIVE_TASKS)
+
+        // Load tasks
+        tasksViewModel.loadTasks(true)
+        // Observe the items to keep LiveData emitting
+        tasksViewModel.items.observeForever { }
+
+        // Then progress indicator is hidden
+        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+
+        // And data correctly loaded
+        assertThat(tasksViewModel.items.awaitNextValue().size, `is`(1))
+    }
+
+    @Test
+    fun loadCompletedTasksFromRepositoryAndLoadIntoView() {
+        // Given an initialized TasksViewModel with initialized tasks
+        // When loading of Tasks is requested
+        tasksViewModel.setFiltering(TasksFilterType.COMPLETED_TASKS)
+
+        // Load tasks
+        tasksViewModel.loadTasks(true)
+        // Observe the items to keep LiveData emitting
+        tasksViewModel.items.observeForever { }
+
+        // Then progress indicator is hidden
+        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+
+        // And data correctly loaded
+        assertThat(tasksViewModel.items.awaitNextValue().size, `is`(2))
+    }
 
     @Test
     fun clickOnFab_showsAddTaskUi() {
@@ -110,83 +143,6 @@ class TasksViewModelTest {
 
         // The snackbar is updated
         assertSnackbarMessage(tasksViewModel.snackbarText, R.string.successfully_deleted_task_message)
-    }
-
-    @Test
-    fun filterTasks_activeTasks() {
-
-        // Arrange
-        val tasksResult = Result.Success(taskList)
-        tasksViewModel.currentFiltering = TasksFilterType.ACTIVE_TASKS
-
-
-        // Act
-        val filterLiveData = tasksViewModel.filterTasks(tasksResult)
-        val currentList = filterLiveData.awaitNextValue()
-        val isError = tasksViewModel.isDataLoadingError.awaitNextValue()
-
-        // Assert
-
-        assertThat(isError,`is`(not(true)))
-        assertThat(currentList, not(hasItems(task2, task3)))
-        assertThat(currentList, hasItem(task1))
-
-    }
-
-    @Test
-    fun filterTasks_completeTasks() {
-
-        // Arrange
-        val tasksResult = Result.Success(taskList)
-        tasksViewModel.currentFiltering = TasksFilterType.COMPLETED_TASKS
-
-        // Act
-        val filterLiveData = tasksViewModel.filterTasks(tasksResult)
-        val currentList = filterLiveData.awaitNextValue()
-        val isError = tasksViewModel.isDataLoadingError.awaitNextValue()
-
-        // Assert
-
-        assertThat(isError,`is`(not(true)))
-        assertThat(currentList, hasItems(task2, task3))
-        assertThat(currentList, not(hasItem(task1)))
-    }
-
-    @Test
-    fun filterTasks_allTasks() {
-
-        // Arrange
-        val tasksResult = Result.Success(taskList)
-        tasksViewModel.currentFiltering = TasksFilterType.ALL_TASKS
-
-
-        // Act
-        val filterLiveData = tasksViewModel.filterTasks(tasksResult)
-        val currentList = filterLiveData.awaitNextValue()
-        val isError = tasksViewModel.isDataLoadingError.awaitNextValue()
-
-        // Assert
-        assertThat(isError,`is`(not(true)))
-        assertThat(currentList, hasItems(task2, task3, task1))
-    }
-
-
-    @Test
-    fun filterTasks_error() {
-
-        // Arrange
-        val tasksResult = Result.Error(Exception())
-        tasksViewModel.currentFiltering = TasksFilterType.ALL_TASKS
-
-
-        // Act
-        tasksViewModel.filterTasks(tasksResult)
-        val isError = tasksViewModel.isDataLoadingError.awaitNextValue()
-
-        // Assert
-        assertThat(isError,`is`(true))
-        assertThat(tasksViewModel.snackbarText.awaitNextValue().getContentIfNotHandled(),
-            `is`(R.string.loading_tasks_error))
     }
 
     @Test
