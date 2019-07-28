@@ -33,11 +33,11 @@ import kotlinx.coroutines.withContext
 /**
  * TODO
  */
-class DefaultTasksRepository private constructor(application: Application) {
+class DefaultTasksRepository(
+    private val tasksRemoteDataSource: TasksDataSource,
+    private val tasksLocalDataSource: TasksDataSource,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO) {
 
-    private val tasksRemoteDataSource: TasksDataSource
-    private val tasksLocalDataSource: TasksDataSource
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
     companion object {
         @Volatile
@@ -45,23 +45,17 @@ class DefaultTasksRepository private constructor(application: Application) {
 
         fun getRepository(app: Application): DefaultTasksRepository {
             return INSTANCE ?: synchronized(this) {
-                DefaultTasksRepository(app).also {
+                val database = Room.databaseBuilder(app,
+                    ToDoDatabase::class.java, "Tasks.db")
+                    .build()
+                DefaultTasksRepository(TasksRemoteDataSource, TasksLocalDataSource(database.taskDao())).also {
                     INSTANCE = it
                 }
             }
         }
     }
 
-    init {
-        val database = Room.databaseBuilder(application.applicationContext,
-            ToDoDatabase::class.java, "Tasks.db")
-            .build()
-
-        tasksRemoteDataSource = TasksRemoteDataSource
-        tasksLocalDataSource = TasksLocalDataSource(database.taskDao())
-    }
-
-    suspend fun getTasks(forceUpdate: Boolean): Result<List<Task>> {
+    suspend fun getTasks(forceUpdate: Boolean = false): Result<List<Task>> {
         if (forceUpdate) {
             try {
                 updateTasksFromRemoteDataSource()
@@ -113,7 +107,7 @@ class DefaultTasksRepository private constructor(application: Application) {
     /**
      * Relies on [getTasks] to fetch data and picks the task with the same ID.
      */
-    suspend fun getTask(taskId: String,  forceUpdate: Boolean = false): Result<Task> {
+    suspend fun getTask(taskId: String, forceUpdate: Boolean = false): Result<Task> {
         if (forceUpdate) {
             updateTaskFromRemoteDataSource(taskId)
         }
