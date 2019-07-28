@@ -16,12 +16,11 @@
 package com.example.android.architecture.blueprints.todoapp.taskdetail
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
+import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Rule
@@ -30,20 +29,26 @@ import org.junit.Rule
 /**
  * Unit tests for the implementation of [TaskDetailViewModel]
  */
-@RunWith(RobolectricTestRunner::class)
 class TaskDetailViewModelTest {
 
     // Subject under test
     private lateinit var taskDetailViewModel: TaskDetailViewModel
 
+    // Use a fake repository to be injected into the viewmodel
+    private lateinit var tasksRepository: FakeTestRepository
+
     // Executes each task synchronously using Architecture Components.
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
+    val task = Task("Title1", "Description1")
+
     @Before
     fun setupViewModel() {
-        // We initialise the tasks to 3, with one active and two completed
-        taskDetailViewModel = TaskDetailViewModel(ApplicationProvider.getApplicationContext())
+        tasksRepository = FakeTestRepository()
+        tasksRepository.addTasks(task)
+
+        taskDetailViewModel = TaskDetailViewModel(tasksRepository)
     }
 
     @Test
