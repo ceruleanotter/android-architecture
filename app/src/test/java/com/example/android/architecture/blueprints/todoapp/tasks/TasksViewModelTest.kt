@@ -30,8 +30,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.collection.IsCollectionWithSize
-import org.hamcrest.collection.IsEmptyCollection
+import org.hamcrest.collection.IsCollectionWithSize.hasSize
+import org.hamcrest.collection.IsEmptyCollection.empty
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -96,7 +96,7 @@ class TasksViewModelTest {
         assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
 
         // And data correctly loaded
-        assertThat(tasksViewModel.items.awaitNextValue(),IsCollectionWithSize.hasSize(1))
+        assertThat(tasksViewModel.items.awaitNextValue(), hasSize(1))
     }
 
     @Test
@@ -114,7 +114,7 @@ class TasksViewModelTest {
         assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
 
         // And data correctly loaded
-        assertThat(tasksViewModel.items.awaitNextValue(), IsCollectionWithSize.hasSize(2))
+        assertThat(tasksViewModel.items.awaitNextValue(), hasSize(2))
     }
 
     @Test
@@ -131,7 +131,7 @@ class TasksViewModelTest {
         assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
 
         // And the list of items is empty
-        assertThat(tasksViewModel.items.awaitNextValue(), IsEmptyCollection.empty())
+        assertThat(tasksViewModel.items.awaitNextValue(), empty())
 
         // And the snackbar updated
         assertSnackbarMessage(tasksViewModel.snackbarText, R.string.loading_tasks_error)
@@ -172,10 +172,10 @@ class TasksViewModelTest {
         val completedTasks = allTasks.filter { it.isCompleted }
 
         // Verify there are no completed tasks left
-        assertThat(completedTasks, IsEmptyCollection.empty())
+        assertThat(completedTasks, empty())
 
         // Verify active task is not cleared
-        assertThat(allTasks, IsCollectionWithSize.hasSize(1))
+        assertThat(allTasks, hasSize(1))
 
         // Verify snackbar is updated
         assertSnackbarMessage(
