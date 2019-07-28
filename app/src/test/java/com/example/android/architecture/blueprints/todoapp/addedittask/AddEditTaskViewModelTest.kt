@@ -16,34 +16,40 @@
 package com.example.android.architecture.blueprints.todoapp.addedittask
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
 import com.example.android.architecture.blueprints.todoapp.R.string
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
 import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
 /**
  * Unit tests for the implementation of [AddEditTaskViewModel].
  */
-@RunWith(RobolectricTestRunner::class)
+@ExperimentalCoroutinesApi
 class AddEditTaskViewModelTest {
 
     // Subject under test
     private lateinit var addEditTaskViewModel: AddEditTaskViewModel
 
+    // Use a fake repository to be injected into the viewmodel
+    private lateinit var tasksRepository: FakeRepository
+
     // Executes each task synchronously using Architecture Components.
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
+    private val task = Task("Title1", "Description1")
+
     @Before
     fun setupViewModel() {
+        // We initialise the repository with no tasks
+        tasksRepository = FakeRepository()
 
         // Create class under test
-        addEditTaskViewModel = AddEditTaskViewModel(ApplicationProvider.getApplicationContext())
+        addEditTaskViewModel = AddEditTaskViewModel(tasksRepository)
     }
 
 
