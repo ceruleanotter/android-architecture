@@ -20,10 +20,10 @@ package com.example.android.architecture.blueprints.todoapp.util
  */
 
 import androidx.fragment.app.Fragment
+import com.example.android.architecture.blueprints.todoapp.TodoApplication
 import com.example.android.architecture.blueprints.todoapp.ViewModelFactory
-import com.example.android.architecture.blueprints.todoapp.data.source.DefaultTasksRepository
 
 fun Fragment.getViewModelFactory(): ViewModelFactory {
-    val repository = DefaultTasksRepository.getRepository(requireActivity().application)
+    val repository = (requireContext().applicationContext as TodoApplication).taskRepository
     return ViewModelFactory(repository)
 }
