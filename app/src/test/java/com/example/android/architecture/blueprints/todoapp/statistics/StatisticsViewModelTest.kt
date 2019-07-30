@@ -21,7 +21,7 @@ import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.DefaultTasksRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
-import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import com.example.android.architecture.blueprints.todoapp.observeForTesting
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,8 +60,10 @@ class StatisticsViewModelTest {
     fun loadEmptyTasksFromRepository_EmptyResults() = mainCoroutineRule.runBlockingTest {
         // Given an initialized StatisticsViewModel with no tasks
 
-        // Then the results are empty
-        assertThat(statisticsViewModel.empty.getOrAwaitValue()).isTrue()
+        statisticsViewModel.empty.observeForTesting {
+            // Then the results are empty
+            assertThat(statisticsViewModel.empty.value).isTrue()
+        }
     }
 
     @Test
@@ -73,13 +75,20 @@ class StatisticsViewModelTest {
         val task4 = Task("Title4", "Description4", true)
         tasksRepository.addTasks(task1, task2, task3, task4)
 
+
         // Then the results are not empty
-        assertThat(statisticsViewModel.empty.getOrAwaitValue())
-            .isFalse()
-        assertThat(statisticsViewModel.activeTasksPercent.getOrAwaitValue())
-            .isEqualTo(25f)
-        assertThat(statisticsViewModel.completedTasksPercent.getOrAwaitValue())
-            .isEqualTo(75f)
+        statisticsViewModel.empty.observeForTesting {
+            assertThat(statisticsViewModel.empty.value)
+                .isFalse()
+        }
+        statisticsViewModel.activeTasksPercent.observeForTesting {
+            assertThat(statisticsViewModel.activeTasksPercent.value)
+                .isEqualTo(25f)
+        }
+        statisticsViewModel.completedTasksPercent.observeForTesting {
+            assertThat(statisticsViewModel.completedTasksPercent.value)
+                .isEqualTo(75f)
+        }
     }
 
     @Test
@@ -93,8 +102,13 @@ class StatisticsViewModelTest {
         )
 
         // Then an error message is shown
-        assertThat(errorViewModel.empty.getOrAwaitValue()).isTrue()
-        assertThat(errorViewModel.error.getOrAwaitValue()).isTrue()
+        errorViewModel.empty.observeForTesting {
+            assertThat(errorViewModel.empty.value).isTrue()
+        }
+
+        errorViewModel.error.observeForTesting {
+            assertThat(errorViewModel.error.value).isTrue()
+        }
     }
 
     @Test
@@ -106,12 +120,12 @@ class StatisticsViewModelTest {
         statisticsViewModel.refresh()
 
         // Then progress indicator is shown
-        assertThat(statisticsViewModel.dataLoading.getOrAwaitValue()).isTrue()
+        assertThat(statisticsViewModel.dataLoading.value).isTrue()
 
         // Execute pending coroutines actions
         mainCoroutineRule.resumeDispatcher()
 
         // Then progress indicator is hidden
-        assertThat(statisticsViewModel.dataLoading.getOrAwaitValue()).isFalse()
+        assertThat(statisticsViewModel.dataLoading.value).isFalse()
     }
 }

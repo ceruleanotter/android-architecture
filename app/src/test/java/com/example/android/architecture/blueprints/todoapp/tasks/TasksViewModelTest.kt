@@ -23,7 +23,6 @@ import com.example.android.architecture.blueprints.todoapp.assertLiveDataEventTr
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
-import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import com.example.android.architecture.blueprints.todoapp.observeForTesting
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -80,16 +79,16 @@ class TasksViewModelTest {
         tasksViewModel.items.observeForTesting {
 
             // Then progress indicator is shown
-            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isTrue()
+            assertThat(tasksViewModel.dataLoading.value).isTrue()
 
             // Execute pending coroutines actions
             mainCoroutineRule.resumeDispatcher()
 
             // Then progress indicator is hidden
-            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isFalse()
+            assertThat(tasksViewModel.dataLoading.value).isFalse()
 
             // And data correctly loaded
-            assertThat(tasksViewModel.items.getOrAwaitValue()).hasSize(3)
+            assertThat(tasksViewModel.items.value).hasSize(3)
         }
     }
 
@@ -105,10 +104,10 @@ class TasksViewModelTest {
         tasksViewModel.items.observeForTesting {
 
             // Then progress indicator is hidden
-            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isFalse()
+            assertThat(tasksViewModel.dataLoading.value).isFalse()
 
             // And data correctly loaded
-            assertThat(tasksViewModel.items.getOrAwaitValue()).hasSize(1)
+            assertThat(tasksViewModel.items.value).hasSize(1)
         }
     }
 
@@ -124,10 +123,10 @@ class TasksViewModelTest {
         tasksViewModel.items.observeForTesting {
 
             // Then progress indicator is hidden
-            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isFalse()
+            assertThat(tasksViewModel.dataLoading.value).isFalse()
 
             // And data correctly loaded
-            assertThat(tasksViewModel.items.getOrAwaitValue()).hasSize(2)
+            assertThat(tasksViewModel.items.value).hasSize(2)
         }
     }
 
@@ -142,10 +141,10 @@ class TasksViewModelTest {
         tasksViewModel.items.observeForTesting {
 
             // Then progress indicator is hidden
-            assertThat(tasksViewModel.dataLoading.getOrAwaitValue()).isFalse()
+            assertThat(tasksViewModel.dataLoading.value).isFalse()
 
             // And the list of items is empty
-            assertThat(tasksViewModel.items.getOrAwaitValue()).isEmpty()
+            assertThat(tasksViewModel.items.value).isEmpty()
 
             // And the snackbar updated
             assertSnackbarMessage(tasksViewModel.snackbarText, R.string.loading_tasks_error)
@@ -158,8 +157,8 @@ class TasksViewModelTest {
         tasksViewModel.addNewTask()
 
         // Then the event is triggered
-        val value = tasksViewModel.newTaskEvent.getOrAwaitValue()
-        assertThat(value.getContentIfNotHandled()).isNotNull()
+        val value = tasksViewModel.newTaskEvent.value
+        assertThat(value?.getContentIfNotHandled()).isNotNull()
     }
 
     @Test
@@ -180,20 +179,24 @@ class TasksViewModelTest {
         // Fetch tasks
         tasksViewModel.loadTasks(true)
 
-        // Fetch tasks
-        val allTasks = tasksViewModel.items.getOrAwaitValue()
-        val completedTasks = allTasks.filter { it.isCompleted }
 
-        // Verify there are no completed tasks left
-        assertThat(completedTasks).isEmpty()
+        tasksViewModel.items.observeForTesting {
 
-        // Verify active task is not cleared
-        assertThat(allTasks).hasSize(1)
+            // Fetch tasks
+            val allTasks = tasksViewModel.items.value
+            val completedTasks = allTasks?.filter { it.isCompleted }
 
-        // Verify snackbar is updated
-        assertSnackbarMessage(
-            tasksViewModel.snackbarText, R.string.completed_tasks_cleared
-        )
+            // Verify there are no completed tasks left
+            assertThat(completedTasks).isEmpty()
+
+            // Verify active task is not cleared
+            assertThat(allTasks).hasSize(1)
+
+            // Verify snackbar is updated
+            assertSnackbarMessage(
+                tasksViewModel.snackbarText, R.string.completed_tasks_cleared
+            )
+        }
     }
 
     @Test
@@ -269,6 +272,6 @@ class TasksViewModelTest {
         tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
 
         // Then the "Add task" action is visible
-        assertThat(tasksViewModel.tasksAddViewVisible.getOrAwaitValue()).isTrue()
+        assertThat(tasksViewModel.tasksAddViewVisible.value).isTrue()
     }
 }

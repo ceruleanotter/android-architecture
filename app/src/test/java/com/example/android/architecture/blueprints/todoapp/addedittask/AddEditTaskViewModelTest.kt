@@ -21,7 +21,6 @@ import com.example.android.architecture.blueprints.todoapp.R.string
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
-import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
@@ -86,13 +85,13 @@ class AddEditTaskViewModelTest {
         addEditTaskViewModel.start(task.id)
 
         // Then progress indicator is shown
-        assertThat(addEditTaskViewModel.dataLoading.getOrAwaitValue()).isTrue()
+        assertThat(addEditTaskViewModel.dataLoading.value).isTrue()
 
         // Execute pending coroutines actions
         mainCoroutineRule.resumeDispatcher()
 
         // Then progress indicator is hidden
-        assertThat(addEditTaskViewModel.dataLoading.getOrAwaitValue()).isFalse()
+        assertThat(addEditTaskViewModel.dataLoading.value).isFalse()
     }
 
     @Test
@@ -104,9 +103,9 @@ class AddEditTaskViewModelTest {
         addEditTaskViewModel.start(task.id)
 
         // Verify a task is loaded
-        assertThat(addEditTaskViewModel.title.getOrAwaitValue()).isEqualTo(task.title)
-        assertThat(addEditTaskViewModel.description.getOrAwaitValue()).isEqualTo(task.description)
-        assertThat(addEditTaskViewModel.dataLoading.getOrAwaitValue()).isFalse()
+        assertThat(addEditTaskViewModel.title.value).isEqualTo(task.title)
+        assertThat(addEditTaskViewModel.description.value).isEqualTo(task.description)
+        assertThat(addEditTaskViewModel.dataLoading.value).isFalse()
     }
 
     @Test

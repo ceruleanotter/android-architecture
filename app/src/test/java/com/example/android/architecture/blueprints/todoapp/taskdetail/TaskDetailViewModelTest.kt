@@ -16,14 +16,10 @@
 package com.example.android.architecture.blueprints.todoapp.taskdetail
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
-import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
+import com.example.android.architecture.blueprints.todoapp.*
 import com.example.android.architecture.blueprints.todoapp.data.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
-import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
-import com.example.android.architecture.blueprints.todoapp.observeForTesting
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -66,30 +62,41 @@ class TaskDetailViewModelTest {
 
     @Test
     fun getActiveTaskFromRepositoryAndLoadIntoView() {
-        taskDetailViewModel.start(task.id)
+        taskDetailViewModel.task.observeForTesting {
+            taskDetailViewModel.start(task.id)
 
-        // Then verify that the view was notified
-        assertThat(taskDetailViewModel.task.getOrAwaitValue()?.title).isEqualTo(task.title)
-        assertThat(taskDetailViewModel.task.getOrAwaitValue()?.description)
-            .isEqualTo(task.description)
+            // Then verify that the view was notified
+            assertThat(taskDetailViewModel.task.value?.title).isEqualTo(task.title)
+            assertThat(taskDetailViewModel.task.value?.description)
+                .isEqualTo(task.description)
+        }
     }
 
     @Test
     fun completeTask() {
-        // Load the ViewModel
-        taskDetailViewModel.start(task.id)
-        // Start observing to compute transformations
-        taskDetailViewModel.task.getOrAwaitValue()
 
-        // Verify that the task was active initially
-        assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted).isFalse()
+        taskDetailViewModel.task.observeForTesting {
+            taskDetailViewModel.completed.observeForTesting {
+                // Load the ViewModel
+                taskDetailViewModel.start(task.id)
+                // Start observing to compute transformations
+                taskDetailViewModel.task.value
 
-        // When the ViewModel is asked to complete the task
-        taskDetailViewModel.setCompleted(true)
+                // Verify that the task was active initially
+                assertThat(taskDetailViewModel.completed.value).isFalse()
 
-        // Then the task is completed and the snackbar shows the correct message
-        assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted).isTrue()
-        assertSnackbarMessage(taskDetailViewModel.snackbarText, R.string.task_marked_complete)
+                // When the ViewModel is asked to complete the task
+                taskDetailViewModel.setCompleted(true)
+
+                // Then the task is completed and the snackbar shows the correct message
+                // map observation not triggered by
+                assertThat(taskDetailViewModel.completed.value).isTrue()
+                assertSnackbarMessage(
+                    taskDetailViewModel.snackbarText,
+                    R.string.task_marked_complete
+                )
+            }
+        }
     }
 
     @Test
@@ -98,21 +105,22 @@ class TaskDetailViewModelTest {
 
         // Load the ViewModel
         taskDetailViewModel.start(task.id)
-        // Start observing to compute transformations
-        taskDetailViewModel.task.observeForTesting {
 
+        // Start observing to compute transformations
+        taskDetailViewModel.completed.observeForTesting {
             // Verify that the task was completed initially
-            assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted).isTrue()
+            assertThat(taskDetailViewModel.completed.value).isTrue()
 
             // When the ViewModel is asked to complete the task
             taskDetailViewModel.setCompleted(false)
 
-            runBlockingTest {
-                // Then the task is not completed and the snackbar shows the correct message
-                val newTask = (tasksRepository.getTask(task.id) as Success).data
-                assertTrue(newTask.isActive)
-                assertSnackbarMessage(taskDetailViewModel.snackbarText, R.string.task_marked_active)
-            }
+            // Then the task is not completed and the snackbar shows the correct message
+            assertThat(taskDetailViewModel.completed.value).isFalse()
+            assertThat(taskDetailViewModel.task.value?.isActive).isTrue()
+            assertSnackbarMessage(
+                taskDetailViewModel.snackbarText,
+                R.string.task_marked_active
+            )
         }
     }
 
@@ -124,9 +132,9 @@ class TaskDetailViewModelTest {
         // Given an initialized ViewModel with an active task
         taskDetailViewModel.start(task.id)
         // Get the computed LiveData value
-        taskDetailViewModel.task.observeForTesting {
+        taskDetailViewModel.isDataAvailable.observeForTesting {
             // Then verify that data is not available
-            assertThat(taskDetailViewModel.isDataAvailable.getOrAwaitValue()).isFalse()
+            assertThat(taskDetailViewModel.isDataAvailable.value).isFalse()
         }
     }
 
@@ -145,8 +153,8 @@ class TaskDetailViewModelTest {
         taskDetailViewModel.editTask()
 
         // Then the event is triggered
-        val value = taskDetailViewModel.editTaskEvent.getOrAwaitValue()
-        assertThat(value.getContentIfNotHandled()).isNotNull()
+        val value = taskDetailViewModel.editTaskEvent.value
+        assertThat(value?.getContentIfNotHandled()).isNotNull()
     }
 
     @Test
@@ -173,13 +181,13 @@ class TaskDetailViewModelTest {
             taskDetailViewModel.refresh()
 
             // Then progress indicator is shown
-            assertThat(taskDetailViewModel.dataLoading.getOrAwaitValue()).isTrue()
+            assertThat(taskDetailViewModel.dataLoading.value).isTrue()
 
             // Execute pending coroutines actions
             mainCoroutineRule.resumeDispatcher()
 
             // Then progress indicator is hidden
-            assertThat(taskDetailViewModel.dataLoading.getOrAwaitValue()).isFalse()
+            assertThat(taskDetailViewModel.dataLoading.value).isFalse()
         }
     }
 }
