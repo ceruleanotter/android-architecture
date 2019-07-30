@@ -16,15 +16,21 @@
 package com.example.android.architecture.blueprints.todoapp.taskdetail
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.example.android.architecture.blueprints.todoapp.R
+import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
 import com.example.android.architecture.blueprints.todoapp.awaitNextValue
+import com.example.android.architecture.blueprints.todoapp.data.Result
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.Before
-import org.junit.Test
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Rule
+import org.junit.*
 
 
 /**
@@ -53,6 +59,90 @@ class TaskDetailViewModelTest {
         taskDetailViewModel = TaskDetailViewModel(tasksRepository)
     }
 
+    @ExperimentalCoroutinesApi
+    val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()
+
+    @ExperimentalCoroutinesApi
+    @Before
+    fun setupDispatcher() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @ExperimentalCoroutinesApi
+    @After
+    fun tearDownDispatcher() {
+        Dispatchers.resetMain()
+        testDispatcher.cleanupTestCoroutines()
+    }
+
+    @Test
+    fun getActiveTaskFromRepositoryAndLoadIntoView() {
+        taskDetailViewModel.start(task.id)
+
+        // Then verify that the view was notified
+        assertThat(taskDetailViewModel.task.awaitNextValue()?.title, `is`(task.title))
+        assertThat(taskDetailViewModel.task.awaitNextValue()?.description, `is`(task.description))
+    }
+
+    // TODO might want to change these significantly as well to only check
+    // ViewModel
+    @Test
+    fun completeTask() {
+        // Load the ViewModel
+        taskDetailViewModel.start(task.id)
+        // Start observing to compute transformations
+        taskDetailViewModel.task.awaitNextValue()
+
+        // Verify that the task was active initially
+        assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted, `is`(false))
+
+        // When the ViewModel is asked to complete the task
+        taskDetailViewModel.setCompleted(true)
+
+        // Then the task is completed and the snackbar shows the correct message
+        assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted, `is`(true))
+        assertSnackbarMessage(taskDetailViewModel.snackbarText, R.string.task_marked_complete)
+    }
+
+    @Test
+    fun activateTask() = runBlockingTest {
+        task.isCompleted = true
+
+        // Load the ViewModel
+        taskDetailViewModel.start(task.id)
+        // Start observing to compute transformations
+        taskDetailViewModel.task.awaitNextValue()
+
+        taskDetailViewModel.task.observeForever { }
+
+        // Verify that the task was completed initially
+        assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted, `is`(true))
+
+        // When the ViewModel is asked to complete the task
+        taskDetailViewModel.setCompleted(false)
+
+        // Then the task is not completed and the snackbar shows the correct message
+        val newTask = (tasksRepository.getTask(task.id) as Result.Success).data
+        Assert.assertTrue(newTask.isActive)
+        assertSnackbarMessage(taskDetailViewModel.snackbarText, R.string.task_marked_active)
+    }
+
+    @Test
+    fun taskDetailViewModel_repositoryError() {
+        // Given a repository that returns errors
+        tasksRepository.setReturnError(true)
+
+        // Given an initialized ViewModel with an active task
+        taskDetailViewModel.start(task.id)
+        // Start observing to compute transformations
+        taskDetailViewModel.task.awaitNextValue()
+        // Refresh to get
+
+
+        // Then verify that data is not available
+        assertThat(taskDetailViewModel.isDataAvailable.awaitNextValue(), `is`(false))
+    }
+
     @Test
     fun updateSnackbar_nullValue() {
         // Before setting the Snackbar text, get its current value
@@ -74,6 +164,17 @@ class TaskDetailViewModelTest {
         assertThat(
             value.getContentIfNotHandled(), (not(nullValue()))
         )
+    }
+
+    @Test
+    fun deleteTask() {
+        assertThat(tasksRepository.tasksServiceData.containsValue(task), `is`(true))
+        taskDetailViewModel.start(task.id)
+
+        // When the deletion of a task is requested
+        taskDetailViewModel.deleteTask()
+
+        assertThat(tasksRepository.tasksServiceData.containsValue(task), `is`(false))
     }
 
 }

@@ -18,9 +18,17 @@ package com.example.android.architecture.blueprints.todoapp.addedittask
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.R.string
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
+import com.example.android.architecture.blueprints.todoapp.awaitNextValue
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
+import org.hamcrest.CoreMatchers.*
+import org.hamcrest.MatcherAssert.assertThat
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -52,6 +60,53 @@ class AddEditTaskViewModelTest {
         addEditTaskViewModel = AddEditTaskViewModel(tasksRepository)
     }
 
+    @ExperimentalCoroutinesApi
+    val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()
+
+    @ExperimentalCoroutinesApi
+    @Before
+    fun setupDispatcher() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @ExperimentalCoroutinesApi
+    @After
+    fun tearDownDispatcher() {
+        Dispatchers.resetMain()
+        testDispatcher.cleanupTestCoroutines()
+    }
+
+    @Test
+    fun saveNewTaskToRepository_showsSuccessMessageUi() {
+        val newTitle = "New Task Title"
+        val newDescription = "Some Task Description"
+        (addEditTaskViewModel).apply {
+            title.value = newTitle
+            description.value = newDescription
+        }
+        addEditTaskViewModel.saveTask()
+
+        val newTask = tasksRepository.tasksServiceData.values.first()
+
+        // Then a task is saved in the repository and the view updated
+        assertThat(newTask.title, `is`(newTitle))
+        assertThat(newTask.description, `is`(newDescription))
+    }
+
+
+    @Test
+    fun loadTasks_taskShown() {
+        // Add task to repository
+        tasksRepository.addTasks(task)
+
+        // Load the task with the viewmodel
+        addEditTaskViewModel.start(task.id)
+
+        // Verify a task is loaded
+        assertThat(addEditTaskViewModel.title.awaitNextValue(), `is`(task.title))
+        assertThat(addEditTaskViewModel.description.awaitNextValue(), `is`(task.description))
+        assertThat(addEditTaskViewModel.dataLoading.awaitNextValue(), `is`(false))
+    }
 
     @Test
     fun saveNewTaskToRepository_emptyTitle_error() {

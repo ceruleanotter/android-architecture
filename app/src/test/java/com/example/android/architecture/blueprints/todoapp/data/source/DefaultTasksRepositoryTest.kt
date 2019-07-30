@@ -251,7 +251,6 @@ class DefaultTasksRepositoryTest {
         assertThat(tasks, hasSize(1))
         assertThat(tasks, hasItems(task2))
         assertThat(tasks, not(hasItems(completedTask)))
-
     }
 
     @Test
