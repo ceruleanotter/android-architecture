@@ -18,7 +18,7 @@ package com.example.android.architecture.blueprints.todoapp.statistics
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.awaitNextValue
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineDispatcher
@@ -45,7 +45,7 @@ class StatisticsViewModelTest {
     private lateinit var statisticsViewModel: StatisticsViewModel
 
     // Use a fake repository to be injected into the viewmodel
-    private val tasksRepository = FakeRepository()
+    private val tasksRepository = FakeTestRepository()
 
     @Before
     fun setupStatisticsViewModel() {

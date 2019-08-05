@@ -29,7 +29,7 @@ import java.util.LinkedHashMap
 /**
  * Implementation of a remote data source with static access to the data for easy testing.
  */
-class FakeRepository : TasksRepository {
+class FakeAndroidTestRepository : TasksRepository {
 
     var tasksServiceData: LinkedHashMap<String, Task> = LinkedHashMap()
 

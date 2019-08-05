@@ -32,7 +32,7 @@ import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.ServiceLocator
 import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeAndroidTestRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
 import com.example.android.architecture.blueprints.todoapp.tasks.ADD_EDIT_RESULT_OK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,23 +44,19 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.robolectric.annotation.LooperMode
-import org.robolectric.annotation.TextLayoutMode
 
 /**
  * Integration test for the Add Task screen.
  */
 @RunWith(AndroidJUnit4::class)
 @MediumTest
-@LooperMode(LooperMode.Mode.PAUSED)
-@TextLayoutMode(TextLayoutMode.Mode.REALISTIC)
 @ExperimentalCoroutinesApi
 class AddEditTaskFragmentTest {
     private lateinit var repository: TasksRepository
 
     @Before
     fun initRepository() {
-        repository = FakeRepository()
+        repository = FakeAndroidTestRepository()
         ServiceLocator.tasksRepository = repository
     }
 

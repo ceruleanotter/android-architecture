@@ -20,7 +20,7 @@ import com.example.android.architecture.blueprints.todoapp.R.string
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
 import com.example.android.architecture.blueprints.todoapp.awaitNextValue
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineDispatcher
@@ -43,7 +43,7 @@ class AddEditTaskViewModelTest {
     private lateinit var addEditTaskViewModel: AddEditTaskViewModel
 
     // Use a fake repository to be injected into the viewmodel
-    private lateinit var tasksRepository: FakeRepository
+    private lateinit var tasksRepository: FakeTestRepository
 
     // Executes each task synchronously using Architecture Components.
     @get:Rule
@@ -54,7 +54,7 @@ class AddEditTaskViewModelTest {
     @Before
     fun setupViewModel() {
         // We initialise the repository with no tasks
-        tasksRepository = FakeRepository()
+        tasksRepository = FakeTestRepository()
 
         // Create class under test
         addEditTaskViewModel = AddEditTaskViewModel(tasksRepository)

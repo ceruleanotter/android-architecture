@@ -27,7 +27,7 @@ import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.ServiceLocator
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeAndroidTestRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -49,7 +49,7 @@ class TaskDetailFragmentTest {
 
     @Before
     fun initRepository() {
-        repository = FakeRepository()
+        repository = FakeAndroidTestRepository()
         ServiceLocator.tasksRepository = repository
     }
 
