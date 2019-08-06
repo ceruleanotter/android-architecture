@@ -18,10 +18,7 @@ package com.example.android.architecture.blueprints.todoapp.tasks
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.assertLiveDataEventTriggered
-import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
+import com.example.android.architecture.blueprints.todoapp.*
 import com.example.android.architecture.blueprints.todoapp.data.Result
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import org.hamcrest.CoreMatchers.*
@@ -65,7 +62,7 @@ class TasksViewModelTest {
         tasksViewModel.addNewTask()
 
         // Then the event is triggered
-        val value = tasksViewModel.newTaskEvent.awaitNextValue()
+        val value = tasksViewModel.newTaskEvent.getOrAwaitValue()
         assertThat(
             value.getContentIfNotHandled(), (not(nullValue()))
         )
@@ -122,8 +119,8 @@ class TasksViewModelTest {
 
         // Act
         val filterLiveData = tasksViewModel.filterTasks(tasksResult)
-        val currentList = filterLiveData.awaitNextValue()
-        val isError = tasksViewModel.isDataLoadingError.awaitNextValue()
+        val currentList = filterLiveData.getOrAwaitValue()
+        val isError = tasksViewModel.isDataLoadingError.getOrAwaitValue()
 
         // Assert
 
@@ -142,8 +139,8 @@ class TasksViewModelTest {
 
         // Act
         val filterLiveData = tasksViewModel.filterTasks(tasksResult)
-        val currentList = filterLiveData.awaitNextValue()
-        val isError = tasksViewModel.isDataLoadingError.awaitNextValue()
+        val currentList = filterLiveData.getOrAwaitValue()
+        val isError = tasksViewModel.isDataLoadingError.getOrAwaitValue()
 
         // Assert
 
@@ -162,8 +159,8 @@ class TasksViewModelTest {
 
         // Act
         val filterLiveData = tasksViewModel.filterTasks(tasksResult)
-        val currentList = filterLiveData.awaitNextValue()
-        val isError = tasksViewModel.isDataLoadingError.awaitNextValue()
+        val currentList = filterLiveData.getOrAwaitValue()
+        val isError = tasksViewModel.isDataLoadingError.getOrAwaitValue()
 
         // Assert
         assertThat(isError,`is`(not(true)))
@@ -181,11 +178,11 @@ class TasksViewModelTest {
 
         // Act
         tasksViewModel.filterTasks(tasksResult)
-        val isError = tasksViewModel.isDataLoadingError.awaitNextValue()
+        val isError = tasksViewModel.isDataLoadingError.getOrAwaitValue()
 
         // Assert
         assertThat(isError,`is`(true))
-        assertThat(tasksViewModel.snackbarText.awaitNextValue().getContentIfNotHandled(),
+        assertThat(tasksViewModel.snackbarText.getOrAwaitValue().getContentIfNotHandled(),
             `is`(R.string.loading_tasks_error))
     }
 
@@ -195,7 +192,7 @@ class TasksViewModelTest {
         tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
 
         // Then the "Add task" action is visible
-        assertThat(tasksViewModel.tasksAddViewVisible.awaitNextValue(), `is`(true))
+        assertThat(tasksViewModel.tasksAddViewVisible.getOrAwaitValue(), `is`(true))
     }
 
 }

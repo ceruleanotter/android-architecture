@@ -17,7 +17,7 @@ package com.example.android.architecture.blueprints.todoapp.taskdetail
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
+import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -63,7 +63,7 @@ class TaskDetailViewModelTest {
         this.taskDetailViewModel.editTask()
 
         // Then the event is triggered
-        val value = this.taskDetailViewModel.editTaskEvent.awaitNextValue()
+        val value = this.taskDetailViewModel.editTaskEvent.getOrAwaitValue()
         assertThat(
             value.getContentIfNotHandled(), (not(nullValue()))
         )
