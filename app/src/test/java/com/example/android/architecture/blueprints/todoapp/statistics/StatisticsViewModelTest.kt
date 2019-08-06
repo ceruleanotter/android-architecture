@@ -16,7 +16,7 @@
 package com.example.android.architecture.blueprints.todoapp.statistics
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
+import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import kotlinx.coroutines.Dispatchers
@@ -73,7 +73,7 @@ class StatisticsViewModelTest {
         // Given an initialized StatisticsViewModel with no tasks
 
         // Then the results are empty
-        assertThat(statisticsViewModel.empty.awaitNextValue(), `is`(true))
+        assertThat(statisticsViewModel.empty.getOrAwaitValue(), `is`(true))
     }
 
     @Test
@@ -86,9 +86,9 @@ class StatisticsViewModelTest {
         tasksRepository.addTasks(task1, task2, task3, task4)
 
         // Then the results are not empty
-        assertThat(statisticsViewModel.empty.awaitNextValue(), `is`(false))
-        assertThat(statisticsViewModel.activeTasksPercent.awaitNextValue(), `is`(25f))
-        assertThat(statisticsViewModel.completedTasksPercent.awaitNextValue(), `is`(75f))
+        assertThat(statisticsViewModel.empty.getOrAwaitValue(), `is`(false))
+        assertThat(statisticsViewModel.activeTasksPercent.getOrAwaitValue(), `is`(25f))
+        assertThat(statisticsViewModel.completedTasksPercent.getOrAwaitValue(), `is`(75f))
     }
 
     @Test
@@ -99,7 +99,7 @@ class StatisticsViewModelTest {
         statisticsViewModel.refresh()
 
         // Then an error message is shown
-        assertThat(statisticsViewModel.empty.awaitNextValue(), `is`(true))
-        assertThat(statisticsViewModel.error.awaitNextValue(), `is`(true))
+        assertThat(statisticsViewModel.empty.getOrAwaitValue(), `is`(true))
+        assertThat(statisticsViewModel.error.getOrAwaitValue(), `is`(true))
     }
 }

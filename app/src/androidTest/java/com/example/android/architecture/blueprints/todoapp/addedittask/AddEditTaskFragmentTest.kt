@@ -130,6 +130,5 @@ class AddEditTaskFragmentTest {
         assertEquals(tasks.size, 1)
         assertEquals(tasks[0].title, "title")
         assertEquals(tasks[0].description, "description")
-
     }
 }

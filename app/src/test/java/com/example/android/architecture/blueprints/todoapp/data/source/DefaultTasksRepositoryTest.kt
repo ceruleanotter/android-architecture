@@ -20,7 +20,10 @@ import com.example.android.architecture.blueprints.todoapp.data.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.setMain
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.Matchers.greaterThan
@@ -31,6 +34,7 @@ import org.hamcrest.core.IsNot.not
 import org.junit.Before
 import org.junit.Test
 import org.hamcrest.core.Is.`is`
+import org.junit.After
 
 
 /**
@@ -59,9 +63,24 @@ class DefaultTasksRepositoryTest {
         tasksLocalDataSource = FakeDataSource(localTasks.toMutableList())
         // Get a reference to the class under test
         tasksRepository = DefaultTasksRepository(
-            // TODO
-            tasksRemoteDataSource, tasksLocalDataSource, Dispatchers.Unconfined
+            tasksRemoteDataSource, tasksLocalDataSource, Dispatchers.Main
         )
+    }
+
+    @ExperimentalCoroutinesApi
+    val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()
+
+    @ExperimentalCoroutinesApi
+    @Before
+    fun setupDispatcher() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @ExperimentalCoroutinesApi
+    @After
+    fun tearDownDispatcher() {
+        Dispatchers.resetMain()
+        testDispatcher.cleanupTestCoroutines()
     }
 
     @ExperimentalCoroutinesApi
@@ -69,7 +88,7 @@ class DefaultTasksRepositoryTest {
     fun getTasks_emptyRepositoryAndUninitializedCache() = runBlockingTest {
         val emptySource = FakeDataSource()
         val tasksRepository = DefaultTasksRepository(
-            emptySource, emptySource, Dispatchers.Unconfined
+            emptySource, emptySource, Dispatchers.Main
         )
 
         assertThat(tasksRepository.getTasks(), instanceOf(Success::class.java))

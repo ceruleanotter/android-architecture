@@ -18,7 +18,7 @@ package com.example.android.architecture.blueprints.todoapp.addedittask
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.R.string
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
+import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import kotlinx.coroutines.Dispatchers
@@ -103,9 +103,9 @@ class AddEditTaskViewModelTest {
         addEditTaskViewModel.start(task.id)
 
         // Verify a task is loaded
-        assertThat(addEditTaskViewModel.title.awaitNextValue(), `is`(task.title))
-        assertThat(addEditTaskViewModel.description.awaitNextValue(), `is`(task.description))
-        assertThat(addEditTaskViewModel.dataLoading.awaitNextValue(), `is`(false))
+        assertThat(addEditTaskViewModel.title.getOrAwaitValue(), `is`(task.title))
+        assertThat(addEditTaskViewModel.description.getOrAwaitValue(), `is`(task.description))
+        assertThat(addEditTaskViewModel.dataLoading.getOrAwaitValue(), `is`(false))
     }
 
     @Test

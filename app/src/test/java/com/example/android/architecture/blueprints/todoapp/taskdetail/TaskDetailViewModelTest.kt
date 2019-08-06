@@ -18,19 +18,20 @@ package com.example.android.architecture.blueprints.todoapp.taskdetail
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
-import com.example.android.architecture.blueprints.todoapp.data.Result
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
+import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.*
+import org.junit.After
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
 
 
 /**
@@ -80,8 +81,8 @@ class TaskDetailViewModelTest {
         taskDetailViewModel.start(task.id)
 
         // Then verify that the view was notified
-        assertThat(taskDetailViewModel.task.awaitNextValue()?.title, `is`(task.title))
-        assertThat(taskDetailViewModel.task.awaitNextValue()?.description, `is`(task.description))
+        assertThat(taskDetailViewModel.task.getOrAwaitValue()?.title, `is`(task.title))
+        assertThat(taskDetailViewModel.task.getOrAwaitValue()?.description, `is`(task.description))
     }
 
     // TODO might want to change these significantly as well to only check
@@ -91,7 +92,7 @@ class TaskDetailViewModelTest {
         // Load the ViewModel
         taskDetailViewModel.start(task.id)
         // Start observing to compute transformations
-        taskDetailViewModel.task.awaitNextValue()
+        taskDetailViewModel.task.getOrAwaitValue()
 
         // Verify that the task was active initially
         assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted, `is`(false))
@@ -105,25 +106,23 @@ class TaskDetailViewModelTest {
     }
 
     @Test
-    fun activateTask() = runBlockingTest {
+    fun activateTask() {
         task.isCompleted = true
 
         // Load the ViewModel
         taskDetailViewModel.start(task.id)
-        // Start observing to compute transformations
-        taskDetailViewModel.task.awaitNextValue()
-
-        taskDetailViewModel.task.observeForever { }
 
         // Verify that the task was completed initially
-        assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted, `is`(true))
+        val initialTask = taskDetailViewModel.task.getOrAwaitValue()
+        assertThat(initialTask?.isCompleted, `is`(true))
 
         // When the ViewModel is asked to complete the task
         taskDetailViewModel.setCompleted(false)
 
+        val newTask = taskDetailViewModel.task.getOrAwaitValue()
+
         // Then the task is not completed and the snackbar shows the correct message
-        val newTask = (tasksRepository.getTask(task.id) as Result.Success).data
-        Assert.assertTrue(newTask.isActive)
+        assertThat(newTask?.isCompleted, `is`(false))
         assertSnackbarMessage(taskDetailViewModel.snackbarText, R.string.task_marked_active)
     }
 
@@ -134,13 +133,9 @@ class TaskDetailViewModelTest {
 
         // Given an initialized ViewModel with an active task
         taskDetailViewModel.start(task.id)
-        // Start observing to compute transformations
-        taskDetailViewModel.task.awaitNextValue()
-        // Refresh to get
 
-
-        // Then verify that data is not available
-        assertThat(taskDetailViewModel.isDataAvailable.awaitNextValue(), `is`(false))
+        // Get the computed LiveData value
+        assertThat(taskDetailViewModel.isDataAvailable.getOrAwaitValue(), `is`(false))
     }
 
     @Test
@@ -160,7 +155,7 @@ class TaskDetailViewModelTest {
         this.taskDetailViewModel.editTask()
 
         // Then the event is triggered
-        val value = this.taskDetailViewModel.editTaskEvent.awaitNextValue()
+        val value = this.taskDetailViewModel.editTaskEvent.getOrAwaitValue()
         assertThat(
             value.getContentIfNotHandled(), (not(nullValue()))
         )

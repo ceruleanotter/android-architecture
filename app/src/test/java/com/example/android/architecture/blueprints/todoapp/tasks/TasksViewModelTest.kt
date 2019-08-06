@@ -17,10 +17,7 @@
 package com.example.android.architecture.blueprints.todoapp.tasks
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.assertLiveDataEventTriggered
-import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
+import com.example.android.architecture.blueprints.todoapp.*
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import kotlinx.coroutines.Dispatchers
@@ -89,14 +86,18 @@ class TasksViewModelTest {
 
         // Load tasks
         tasksViewModel.loadTasks(true)
-        // Observe the items to keep LiveData emitting
-        tasksViewModel.items.observeForever { }
 
-        // Then progress indicator is hidden
-        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+        // Observe the items to keep LiveData emitting. tasksViewModel.dataLoading is updated
+        // when the switchMap in tasksViewModel.items is executed, which doesn't happen
+        // unless it's observed.
+        tasksViewModel.items.observeForTesting {
 
-        // And data correctly loaded
-        assertThat(tasksViewModel.items.awaitNextValue(), hasSize(1))
+            // Then progress indicator is hidden
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue(), `is`(false))
+
+            // And data correctly loaded
+            assertThat(tasksViewModel.items.getOrAwaitValue(), hasSize(1))
+        }
     }
 
     @Test
@@ -107,14 +108,18 @@ class TasksViewModelTest {
 
         // Load tasks
         tasksViewModel.loadTasks(true)
-        // Observe the items to keep LiveData emitting
-        tasksViewModel.items.observeForever { }
 
-        // Then progress indicator is hidden
-        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+        // Observe the items to keep LiveData emitting. tasksViewModel.dataLoading is updated
+        // when the switchMap in tasksViewModel.items is executed, which doesn't happen
+        // unless it's observed.
+        tasksViewModel.items.observeForTesting {
 
-        // And data correctly loaded
-        assertThat(tasksViewModel.items.awaitNextValue(), hasSize(2))
+            // Then progress indicator is hidden
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue(), `is`(false))
+
+            // And data correctly loaded
+            assertThat(tasksViewModel.items.getOrAwaitValue(), hasSize(2))
+        }
     }
 
     @Test
@@ -124,17 +129,21 @@ class TasksViewModelTest {
 
         // Load tasks
         tasksViewModel.loadTasks(true)
-        // Observe the items to keep LiveData emitting
-        tasksViewModel.items.observeForever { }
 
-        // Then progress indicator is hidden
-        assertThat(tasksViewModel.dataLoading.awaitNextValue(), `is`(false))
+        // Observe the items to keep LiveData emitting. tasksViewModel.dataLoading is updated
+        // when the switchMap in tasksViewModel.items is executed, which doesn't happen
+        // unless it's observed.
+        tasksViewModel.items.observeForTesting {
 
-        // And the list of items is empty
-        assertThat(tasksViewModel.items.awaitNextValue(), empty())
+            // Then progress indicator is hidden
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue(), `is`(false))
 
-        // And the snackbar updated
-        assertSnackbarMessage(tasksViewModel.snackbarText, R.string.loading_tasks_error)
+            // And the list of items is empty
+            assertThat(tasksViewModel.items.getOrAwaitValue(), empty())
+
+            // And the snackbar updated
+            assertSnackbarMessage(tasksViewModel.snackbarText, R.string.loading_tasks_error)
+        }
     }
 
     @Test
@@ -143,7 +152,7 @@ class TasksViewModelTest {
         tasksViewModel.addNewTask()
 
         // Then the event is triggered
-        val value = tasksViewModel.newTaskEvent.awaitNextValue()
+        val value = tasksViewModel.newTaskEvent.getOrAwaitValue()
         assertThat(
             value.getContentIfNotHandled(), (not(nullValue()))
         )
@@ -168,7 +177,7 @@ class TasksViewModelTest {
         tasksViewModel.loadTasks(true)
 
         // Fetch tasks
-        val allTasks = tasksViewModel.items.awaitNextValue()
+        val allTasks = tasksViewModel.items.getOrAwaitValue()
         val completedTasks = allTasks.filter { it.isCompleted }
 
         // Verify there are no completed tasks left
@@ -258,6 +267,6 @@ class TasksViewModelTest {
         tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
 
         // Then the "Add task" action is visible
-        assertThat(tasksViewModel.tasksAddViewVisible.awaitNextValue(), `is`(true))
+        assertThat(tasksViewModel.tasksAddViewVisible.getOrAwaitValue(), `is`(true))
     }
 }

@@ -91,8 +91,9 @@ class FakeTestRepository : TasksRepository {
     }
 
     override suspend fun completeTask(task: Task) {
-        val completedTask = Task(task.title, task.description, true, task.id)
+        val completedTask = task.copy(isCompleted = true)
         tasksServiceData[task.id] = completedTask
+        refreshTasks()
     }
 
     override suspend fun completeTask(taskId: String) {
@@ -101,8 +102,9 @@ class FakeTestRepository : TasksRepository {
     }
 
     override suspend fun activateTask(task: Task) {
-        val activeTask = Task(task.title, task.description, false, task.id)
+        val activeTask = task.copy(isCompleted = false)
         tasksServiceData[task.id] = activeTask
+        refreshTasks()
     }
 
     override suspend fun activateTask(taskId: String) {
