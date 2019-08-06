@@ -16,19 +16,12 @@
 package com.example.android.architecture.blueprints.todoapp.taskdetail
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
+import com.example.android.architecture.blueprints.todoapp.*
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
-import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -46,6 +39,11 @@ class TaskDetailViewModelTest {
     // Use a fake repository to be injected into the viewmodel
     private lateinit var tasksRepository: FakeTestRepository
 
+    // Set the main coroutines dispatcher for unit testing.
+    @ExperimentalCoroutinesApi
+    @get:Rule
+    var mainCoroutineRule = MainCoroutineRule()
+
     // Executes each task synchronously using Architecture Components.
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
@@ -58,22 +56,6 @@ class TaskDetailViewModelTest {
         tasksRepository.addTasks(task)
 
         taskDetailViewModel = TaskDetailViewModel(tasksRepository)
-    }
-
-    @ExperimentalCoroutinesApi
-    val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()
-
-    @ExperimentalCoroutinesApi
-    @Before
-    fun setupDispatcher() {
-        Dispatchers.setMain(testDispatcher)
-    }
-
-    @ExperimentalCoroutinesApi
-    @After
-    fun tearDownDispatcher() {
-        Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
     }
 
     @Test
@@ -172,4 +154,27 @@ class TaskDetailViewModelTest {
         assertThat(tasksRepository.tasksServiceData.containsValue(task), `is`(false))
     }
 
+    @Test
+    fun loadTask_loading() {
+        // Pause dispatcher so we can verify initial values
+        mainCoroutineRule.pauseDispatcher()
+
+        // Load the task in the viewmodel
+        taskDetailViewModel.start(task.id)
+
+        // Start observing to compute transformations
+        taskDetailViewModel.task.observeForTesting {
+            // Force a refresh to show the loading indicator
+            taskDetailViewModel.refresh()
+
+            // Then progress indicator is shown
+            assertThat(taskDetailViewModel.dataLoading.getOrAwaitValue(), `is`(true))
+
+            // Execute pending coroutines actions
+            mainCoroutineRule.resumeDispatcher()
+
+            // Then progress indicator is hidden
+            assertThat(taskDetailViewModel.dataLoading.getOrAwaitValue(), `is`(false))
+        }
+    }
 }

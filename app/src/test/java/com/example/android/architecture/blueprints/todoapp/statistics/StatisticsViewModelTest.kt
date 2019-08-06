@@ -16,17 +16,13 @@
 package com.example.android.architecture.blueprints.todoapp.statistics
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
-import kotlinx.coroutines.Dispatchers
+import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
-import org.hamcrest.CoreMatchers.*
+import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -47,27 +43,17 @@ class StatisticsViewModelTest {
     // Use a fake repository to be injected into the viewmodel
     private val tasksRepository = FakeTestRepository()
 
+    // Set the main coroutines dispatcher for unit testing.
+    @ExperimentalCoroutinesApi
+    @get:Rule
+    var mainCoroutineRule = MainCoroutineRule()
+
     @Before
     fun setupStatisticsViewModel() {
         statisticsViewModel = StatisticsViewModel(tasksRepository)
     }
 
-    @ExperimentalCoroutinesApi
-    val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()
-
-    @ExperimentalCoroutinesApi
-    @Before
-    fun setupDispatcher() {
-        Dispatchers.setMain(testDispatcher)
-    }
-
-    @ExperimentalCoroutinesApi
-    @After
-    fun tearDownDispatcher() {
-        Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
-    }
-
+    // TODO in branch this is  mainCoroutineRule.runBlockingTest, not sure why
     @Test
     fun loadEmptyTasksFromRepository_EmptyResults() {
         // Given an initialized StatisticsViewModel with no tasks
@@ -101,5 +87,23 @@ class StatisticsViewModelTest {
         // Then an error message is shown
         assertThat(statisticsViewModel.empty.getOrAwaitValue(), `is`(true))
         assertThat(statisticsViewModel.error.getOrAwaitValue(), `is`(true))
+    }
+
+    @Test
+    fun loadTasks_loading() {
+        // Pause dispatcher so we can verify initial values
+        mainCoroutineRule.pauseDispatcher()
+
+        // Load the task in the viewmodel
+        statisticsViewModel.refresh()
+
+        // Then progress indicator is shown
+        assertThat(statisticsViewModel.dataLoading.getOrAwaitValue(), `is`(true))
+
+        // Execute pending coroutines actions
+        mainCoroutineRule.resumeDispatcher()
+
+        // Then progress indicator is hidden
+        assertThat(statisticsViewModel.dataLoading.getOrAwaitValue(), `is`(false))
     }
 }
