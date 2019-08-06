@@ -23,6 +23,7 @@ import com.example.android.architecture.blueprints.todoapp.data.Result.Error
 import com.example.android.architecture.blueprints.todoapp.data.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksDataSource
+import com.example.android.architecture.blueprints.todoapp.util.wrapEspressoIdlingResource
 import kotlinx.coroutines.delay
 
 /**
@@ -68,19 +69,25 @@ object TasksRemoteDataSource : TasksDataSource {
     }
 
     override suspend fun getTasks(): Result<List<Task>> {
-        // Simulate network by delaying the execution.
-        val tasks = TASKS_SERVICE_DATA.values.toList()
-        delay(SERVICE_LATENCY_IN_MILLIS)
-        return Success(tasks)
+        // Added to deal with network delay
+        wrapEspressoIdlingResource {
+            // Simulate network by delaying the execution.
+            val tasks = TASKS_SERVICE_DATA.values.toList()
+            delay(SERVICE_LATENCY_IN_MILLIS)
+            return Success(tasks)
+        }
     }
 
     override suspend fun getTask(taskId: String): Result<Task> {
-        // Simulate network by delaying the execution.
-        delay(SERVICE_LATENCY_IN_MILLIS)
-        TASKS_SERVICE_DATA[taskId]?.let {
-            return Success(it)
-        }
-        return Error(Exception("Task not found"))
+        // Added to deal with network delay
+       wrapEspressoIdlingResource {
+           // Simulate network by delaying the execution.
+           delay(SERVICE_LATENCY_IN_MILLIS)
+           TASKS_SERVICE_DATA[taskId]?.let {
+               return Success(it)
+           }
+           return Error(Exception("Task not found"))
+       }
     }
 
     private fun addTask(title: String, description: String) {
