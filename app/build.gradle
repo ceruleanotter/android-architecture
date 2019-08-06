@@ -91,6 +91,8 @@ dependencies {
     androidTestImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
     androidTestImplementation "androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion"
     androidTestImplementation "androidx.test:rules:$androidXTestRulesVersion"
+//    androidTestImplementation "androidx.room:room-testing:$roomVersion" // TODO this is not needed
+    // for the androidx jvm tests, why? using robolectric instead?
     androidTestImplementation "androidx.arch.core:core-testing:$archTestingVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
 
