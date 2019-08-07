@@ -181,6 +181,30 @@ class TasksViewModelTest {
     }
 
     @Test
+    fun clearCompletedTasks_clearsTasks() {
+        // When completed tasks are cleared
+        tasksViewModel.clearCompletedTasks()
+
+        // Fetch tasks
+        tasksViewModel.loadTasks(true)
+
+        // Fetch tasks
+        val allTasks = tasksViewModel.items.getOrAwaitValue()
+        val completedTasks = allTasks.filter { it.isCompleted }
+
+        // Verify there are no completed tasks left
+        assertThat(completedTasks, empty())
+
+        // Verify active task is not cleared
+        assertThat(allTasks, hasSize(1))
+
+        // Verify snackbar is updated
+        assertSnackbarMessage(
+            tasksViewModel.snackbarText, R.string.completed_tasks_cleared
+        )
+    }
+
+    @Test
     fun showEditResultMessages_editOk_snackbarUpdated() {
         // When the viewmodel receives a result from another destination
         tasksViewModel.showEditResultMessage(EDIT_RESULT_OK)
