@@ -104,11 +104,8 @@ class TasksActivityTest {
     }
 
     @Test
-    fun editTask() {
-
-        runBlocking {
-            repository.saveTask(Task("TITLE1", "DESCRIPTION"))
-        }
+    fun editTask() = runBlocking {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION"))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -162,15 +159,9 @@ class TasksActivityTest {
     }
 
     @Test
-    fun createTwoTasks_deleteOneTask() {
-        // TODO wrapping the whole thing with run blocking causes
-        // java.lang.RuntimeException: Delegate runner 'androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner' for AndroidJUnit4 could not be loaded.
-        // Why?
-
-        runBlocking {
-            repository.saveTask(Task("TITLE1", "DESCRIPTION"))
-            repository.saveTask(Task("TITLE2", "DESCRIPTION"))
-        }
+    fun createTwoTasks_deleteOneTask() = runBlocking {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION"))
+        repository.saveTask(Task("TITLE2", "DESCRIPTION"))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -191,12 +182,10 @@ class TasksActivityTest {
     }
 
     @Test
-    fun markTaskAsCompleteOnDetailScreen_taskIsCompleteInList() {
+    fun markTaskAsCompleteOnDetailScreen_taskIsCompleteInList() = runBlocking {
         // Add 1 active task
         val taskTitle = "COMPLETED"
-        runBlocking {
-            repository.saveTask(Task(taskTitle, "DESCRIPTION"))
-        }
+        repository.saveTask(Task(taskTitle, "DESCRIPTION"))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -223,12 +212,10 @@ class TasksActivityTest {
     }
 
     @Test
-    fun markTaskAsActiveOnDetailScreen_taskIsActiveInList() {
+    fun markTaskAsActiveOnDetailScreen_taskIsActiveInList() = runBlocking {
         // Add 1 completed task
         val taskTitle = "ACTIVE"
-        runBlocking {
-            repository.saveTask(Task(taskTitle, "DESCRIPTION", true))
-        }
+        repository.saveTask(Task(taskTitle, "DESCRIPTION", true))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -254,12 +241,10 @@ class TasksActivityTest {
     }
 
     @Test
-    fun markTaskAsCompleteAndActiveOnDetailScreen_taskIsActiveInList() {
+    fun markTaskAsCompleteAndActiveOnDetailScreen_taskIsActiveInList() = runBlocking {
         // Add 1 active task
         val taskTitle = "ACT-COMP"
-        runBlocking {
-            repository.saveTask(Task(taskTitle, "DESCRIPTION"))
-        }
+        repository.saveTask(Task(taskTitle, "DESCRIPTION"))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -288,12 +273,10 @@ class TasksActivityTest {
     }
 
     @Test
-    fun markTaskAsActiveAndCompleteOnDetailScreen_taskIsCompleteInList() {
+    fun markTaskAsActiveAndCompleteOnDetailScreen_taskIsCompleteInList() = runBlocking {
         // Add 1 completed task
         val taskTitle = "COMP-ACT"
-        runBlocking {
-            repository.saveTask(Task(taskTitle, "DESCRIPTION", true))
-        }
+        repository.saveTask(Task(taskTitle, "DESCRIPTION", true))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)

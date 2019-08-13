@@ -53,7 +53,7 @@ class StatisticsViewModelTest {
         statisticsViewModel = StatisticsViewModel(tasksRepository)
     }
 
-    // TODO in branch this is  mainCoroutineRule.runBlockingTest, not sure why
+    // TODO in branch this is  mainCoroutineRule.runBlockingTest, not sure why, removed it
     @Test
     fun loadEmptyTasksFromRepository_EmptyResults() {
         // Given an initialized StatisticsViewModel with no tasks

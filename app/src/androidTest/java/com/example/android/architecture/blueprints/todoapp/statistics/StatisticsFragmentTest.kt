@@ -84,7 +84,6 @@ class StatisticsFragmentTest {
     @Test
     fun tasks_showsNonEmptyMessage() = runBlockingTest{
         // Given some tasks
-
         repository.apply {
             saveTask(Task("Title1", "Description1", false))
             saveTask(Task("Title2", "Description2", true))

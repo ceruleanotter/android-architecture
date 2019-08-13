@@ -180,6 +180,7 @@ class TasksViewModelTest {
         assertLiveDataEventTriggered(tasksViewModel.openTaskEvent, taskId)
     }
 
+    // TODO removed runBlockingTest here
     @Test
     fun clearCompletedTasks_clearsTasks() {
         // When completed tasks are cleared
@@ -263,8 +264,8 @@ class TasksViewModelTest {
         // Activate task
         tasksViewModel.completeTask(task, false)
 
-        // TODO why not used getTask to check this?
         // Verify the task is active
+        // TODO why not used getTask to check this?
         assertThat(tasksRepository.tasksServiceData[task.id]?.isActive, `is`(true))
 
         // The snackbar is updated

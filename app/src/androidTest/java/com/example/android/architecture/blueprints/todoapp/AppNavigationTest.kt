@@ -148,11 +148,9 @@ class AppNavigationTest {
     }
 
     @Test
-    fun taskDetailScreen_doubleUIBackButton() {
+    fun taskDetailScreen_doubleUIBackButton() =runBlocking {
         val task = Task("UI <- button", "Description")
-        runBlocking {
-            tasksRepository.saveTask(task)
-        }
+        tasksRepository.saveTask(task)
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -185,11 +183,9 @@ class AppNavigationTest {
     }
 
     @Test
-    fun taskDetailScreen_doubleBackButton() {
+    fun taskDetailScreen_doubleBackButton() = runBlocking {
         val task = Task("Back button", "Description")
-        runBlocking {
-            tasksRepository.saveTask(task)
-        }
+        tasksRepository.saveTask(task)
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)

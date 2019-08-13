@@ -161,7 +161,6 @@ class TaskDetailViewModelTest {
 
         // Load the task in the viewmodel
         taskDetailViewModel.start(task.id)
-
         // Start observing to compute transformations
         taskDetailViewModel.task.observeForTesting {
             // Force a refresh to show the loading indicator

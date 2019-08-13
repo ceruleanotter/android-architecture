@@ -73,6 +73,7 @@ dependencies {
     testImplementation "org.robolectric:robolectric:$robolectricVersion"
     // TODO Espresso seems here to be used in part of getting the correct hasSize hamcrest assertion
     testImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
+    // TODO believe it is safe to remove these
 //    testImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
 //    testImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
 
@@ -94,14 +95,23 @@ dependencies {
     androidTestImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
     androidTestImplementation "androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion"
     androidTestImplementation "androidx.test:rules:$androidXTestRulesVersion"
-//    androidTestImplementation "androidx.room:room-testing:$roomVersion" // TODO this is not needed
-    // for the androidx jvm tests, why? using robolectric instead?
+//    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+//    TODO this is not needed for the androidx jvm tests, why? using robolectric instead?
     androidTestImplementation "androidx.arch.core:core-testing:$archTestingVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
+    // TODO do we need any of these? tests run with idling resources without
 //    androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
 //    androidTestImplementation "androidx.test.espresso.idling:idling-concurrent:$espressoVersion"
 //    implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
+
+    // Resolve conflicts between main and test APK:
+    // TODO do we need any of these?
+//    androidTestImplementation "androidx.annotation:annotation:$androidXAnnotations"
+//    androidTestImplementation "androidx.legacy:legacy-support-v4:$androidXLegacySupport"
+//    androidTestImplementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
+//    androidTestImplementation "androidx.appcompat:appcompat:$appCompatVersion"
+//    androidTestImplementation "com.google.android.material:material:$materialVersion"
 
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
