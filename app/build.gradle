@@ -12,68 +12,12 @@ android {
         targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
         versionName "1.0"
-
-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
-    android {
-        sourceSets {
-            String sharedTestDir = 'src/sharedTest/java'
-            test {
-                java.srcDir sharedTestDir
-            }
-            androidTest {
-                java.srcDir sharedTestDir
-            }
-        }
-    }
-
     buildTypes {
-        debug {
-            minifyEnabled false
-            testCoverageEnabled true
-            useProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
-        }
-
         release {
-            minifyEnabled true
-            useProguard true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            testProguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguardTest-rules.pro'
-        }
-    }
-
-    flavorDimensions "default"
-
-    // If you need to add more flavors, consider using flavor dimensions.
-    productFlavors {
-        mock {
-            dimension "default"
-            applicationIdSuffix = ".mock"
-        }
-        prod {
-            dimension "default"
-        }
-    }
-
-    // Remove mockRelease as it's not needed.
-    android.variantFilter { variant ->
-        if (variant.buildType.name == 'release'
-                && variant.getFlavors().get(0).name == 'mock') {
-            variant.setIgnore(true)
-        }
-    }
-
-    // Always show the result of every unit test, even if it passes.
-    testOptions.unitTests {
-        includeAndroidResources = true
-
-        all {
-            testLogging {
-                events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
-            }
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -81,12 +25,20 @@ android {
         enabled = true
         enabledForTests = true
     }
+
+    // Always show the result of every unit test when running via command line, even if it passes.
+    testOptions.unitTests {
+        includeAndroidResources = true
+
+        // TODO add this earlier
+        all {
+            testLogging {
+                events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+            }
+        }
+    }
 }
 
-/*
- Dependency versions are defined in the top level build.gradle file. This helps keeping track of
- all versions in a single place. This improves readability and helps managing project complexity.
- */
 dependencies {
 
     // App dependencies
@@ -115,21 +67,21 @@ dependencies {
 
     // Dependencies for local unit tests
     testImplementation "junit:junit:$junitVersion"
-    testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.hamcrest:hamcrest-all:$hamcrestVersion"
     testImplementation "androidx.arch.core:core-testing:$archTestingVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
     testImplementation "org.robolectric:robolectric:$robolectricVersion"
+    // TODO Espresso seems here to be used in part of getting the correct hasSize hamcrest assertion
     testImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-    testImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
-    testImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
-    testImplementation "com.google.truth:truth:$truthVersion"
+    // TODO believe it is safe to remove these
+//    testImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
+//    testImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
 
     // Dependencies for Android unit tests
     androidTestImplementation "junit:junit:$junitVersion"
     androidTestImplementation "org.mockito:mockito-core:$mockitoVersion"
-    androidTestImplementation "com.linkedin.dexmaker:dexmaker-mockito:$dexMakerVersion"
+    androidTestImplementation "com.linkedin.dexmaker:dexmaker-mockito:$dexMakerVersion" // Seems to be required for mockito to work
     androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
     // AndroidX Test - JVM testing
@@ -139,27 +91,28 @@ dependencies {
     // Once https://issuetracker.google.com/127986458 is fixed this can be testImplementation
     implementation "androidx.fragment:fragment-testing:$fragmentVersion"
     implementation "androidx.test:core:$androidXTestCoreVersion"
-    implementation "androidx.fragment:fragment:$fragmentVersion"
 
     // AndroidX Test - Instrumented testing
     androidTestImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
     androidTestImplementation "androidx.test.ext:junit-ktx:$androidXTestExtKotlinRunnerVersion"
     androidTestImplementation "androidx.test:rules:$androidXTestRulesVersion"
-    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+//    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+//    TODO this is not needed for the androidx jvm tests, why? using robolectric instead?
     androidTestImplementation "androidx.arch.core:core-testing:$archTestingVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
-    androidTestImplementation "androidx.test.espresso.idling:idling-concurrent:$espressoVersion"
-    androidTestImplementation "org.robolectric:annotations:$robolectricVersion"
-    implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
+    // TODO do we need any of these? tests run with idling resources without
+//    androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
+//    androidTestImplementation "androidx.test.espresso.idling:idling-concurrent:$espressoVersion"
+//    implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
 
     // Resolve conflicts between main and test APK:
-    androidTestImplementation "androidx.annotation:annotation:$androidXAnnotations"
-    androidTestImplementation "androidx.legacy:legacy-support-v4:$androidXLegacySupport"
-    androidTestImplementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
-    androidTestImplementation "androidx.appcompat:appcompat:$appCompatVersion"
-    androidTestImplementation "com.google.android.material:material:$materialVersion"
+    // TODO do we need any of these?
+//    androidTestImplementation "androidx.annotation:annotation:$androidXAnnotations"
+//    androidTestImplementation "androidx.legacy:legacy-support-v4:$androidXLegacySupport"
+//    androidTestImplementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
+//    androidTestImplementation "androidx.appcompat:appcompat:$appCompatVersion"
+//    androidTestImplementation "com.google.android.material:material:$materialVersion"
 
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"

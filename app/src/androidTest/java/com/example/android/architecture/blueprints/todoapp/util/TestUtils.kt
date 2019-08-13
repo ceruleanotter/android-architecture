@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package com.example.android.architecture.blueprints.todoapp.tasks
+package com.example.android.architecture.blueprints.todoapp.util
 
 import android.app.Activity
 import androidx.appcompat.widget.Toolbar
 import androidx.test.core.app.ActivityScenario
 import com.example.android.architecture.blueprints.todoapp.R
 
+// TODO moved this into util package
 fun <T : Activity> ActivityScenario<T>.getToolbarNavigationContentDescription()
-    : String {
+        : String {
     var description = ""
     onActivity {
         description =

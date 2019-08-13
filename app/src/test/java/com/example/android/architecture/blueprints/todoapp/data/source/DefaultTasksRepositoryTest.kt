@@ -15,15 +15,25 @@
  */
 package com.example.android.architecture.blueprints.todoapp.data.source
 
+import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.data.Result
 import com.example.android.architecture.blueprints.todoapp.data.Result.Success
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.hamcrest.CoreMatchers.*
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.greaterThan
+import org.hamcrest.collection.IsCollectionWithSize.hasSize
+import org.hamcrest.collection.IsEmptyCollection.empty
+import org.hamcrest.core.Is.`is`
+import org.hamcrest.core.IsEqual
+import org.hamcrest.core.IsNot.not
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+
 
 /**
  * Unit tests for the implementation of the in-memory repository with cache.
@@ -44,6 +54,11 @@ class DefaultTasksRepositoryTest {
     // Class under test
     private lateinit var tasksRepository: DefaultTasksRepository
 
+    // Set the main coroutines dispatcher for unit testing.
+    @ExperimentalCoroutinesApi
+    @get:Rule
+    var mainCoroutineRule = MainCoroutineRule()
+
     @ExperimentalCoroutinesApi
     @Before
     fun createRepository() {
@@ -51,7 +66,7 @@ class DefaultTasksRepositoryTest {
         tasksLocalDataSource = FakeDataSource(localTasks.toMutableList())
         // Get a reference to the class under test
         tasksRepository = DefaultTasksRepository(
-            tasksRemoteDataSource, tasksLocalDataSource, Dispatchers.Unconfined
+            tasksRemoteDataSource, tasksLocalDataSource, Dispatchers.Main
         )
     }
 
@@ -60,10 +75,10 @@ class DefaultTasksRepositoryTest {
     fun getTasks_emptyRepositoryAndUninitializedCache() = runBlockingTest {
         val emptySource = FakeDataSource()
         val tasksRepository = DefaultTasksRepository(
-            emptySource, emptySource, Dispatchers.Unconfined
+            emptySource, emptySource, Dispatchers.Main
         )
 
-        assertThat(tasksRepository.getTasks() is Success).isTrue()
+        assertThat(tasksRepository.getTasks(), instanceOf(Success::class.java))
     }
 
     @Test
@@ -76,7 +91,7 @@ class DefaultTasksRepositoryTest {
         val second = tasksRepository.getTasks()
 
         // Initial and second should match because we didn't force a refresh
-        assertThat(second).isEqualTo(initial)
+        assertThat(second, IsEqual(initial))
     }
 
     @Test
@@ -85,21 +100,21 @@ class DefaultTasksRepositoryTest {
         val tasks = tasksRepository.getTasks(true) as Success
 
         // Then tasks are loaded from the remote data source
-        assertThat(tasks.data).isEqualTo(remoteTasks)
+        assertThat(tasks.data, IsEqual(remoteTasks))
     }
 
     @Test
     fun saveTask_savesToLocalAndRemote() = runBlockingTest {
         // Make sure newTask is not in the remote or local datasources
-        assertThat(tasksRemoteDataSource.tasks).doesNotContain(newTask)
-        assertThat(tasksLocalDataSource.tasks).doesNotContain(newTask)
+        assertThat(tasksRemoteDataSource.tasks, not(hasItems(newTask)))
+        assertThat(tasksLocalDataSource.tasks, not(hasItems(newTask)))
 
         // When a task is saved to the tasks repository
         tasksRepository.saveTask(newTask)
 
         // Then the remote and local sources are called
-        assertThat(tasksRemoteDataSource.tasks).contains(newTask)
-        assertThat(tasksLocalDataSource.tasks).contains(newTask)
+        assertThat(tasksRemoteDataSource.tasks, hasItems(newTask))
+        assertThat(tasksLocalDataSource.tasks, hasItems(newTask))
     }
 
     @Test
@@ -112,13 +127,13 @@ class DefaultTasksRepositoryTest {
 
         // But if tasks are cached, subsequent calls load from cache
         val cachedTasks = tasksRepository.getTasks()
-        assertThat(cachedTasks).isEqualTo(tasks)
+        assertThat(cachedTasks, IsEqual(tasks))
 
         // Now force remote loading
         val refreshedTasks = tasksRepository.getTasks(true) as Success
 
         // Tasks must be the recently updated in REMOTE
-        assertThat(refreshedTasks.data).isEqualTo(newTasks)
+        assertThat(refreshedTasks.data, IsEqual(newTasks))
     }
 
     @Test
@@ -130,7 +145,7 @@ class DefaultTasksRepositoryTest {
         val refreshedTasks = tasksRepository.getTasks(true)
 
         // Result should be an error
-        assertThat(refreshedTasks).isInstanceOf(Result.Error::class.java)
+        assertThat(refreshedTasks, instanceOf(Result.Error::class.java))
     }
 
     @Test
@@ -139,7 +154,7 @@ class DefaultTasksRepositoryTest {
         tasksRemoteDataSource.tasks = null
 
         // The repository fetches from the local source
-        assertThat((tasksRepository.getTasks() as Success).data).isEqualTo(localTasks)
+        assertThat((tasksRepository.getTasks() as Success).data, IsEqual(localTasks))
     }
 
     @Test
@@ -149,7 +164,7 @@ class DefaultTasksRepositoryTest {
         tasksLocalDataSource.tasks = null
 
         // The repository returns an error
-        assertThat(tasksRepository.getTasks()).isInstanceOf(Result.Error::class.java)
+        assertThat(tasksRepository.getTasks(), instanceOf(Result.Error::class.java))
     }
 
     @Test
@@ -159,9 +174,9 @@ class DefaultTasksRepositoryTest {
         // First load will fetch from remote
         val newTasks = (tasksRepository.getTasks(true) as Success).data
 
-        assertThat(newTasks).isEqualTo(remoteTasks)
-        assertThat(newTasks).isEqualTo(tasksLocalDataSource.tasks)
-        assertThat(tasksLocalDataSource.tasks).isEqualTo(initialLocal)
+        assertThat(newTasks, IsEqual(remoteTasks))
+        assertThat(newTasks, IsEqual(tasksLocalDataSource.tasks as List<Task>))
+        assertThat(tasksLocalDataSource.tasks, `is`(initialLocal))
     }
 
     @Test
@@ -170,13 +185,13 @@ class DefaultTasksRepositoryTest {
         tasksRepository.saveTask(newTask)
 
         // Make sure it's active
-        assertThat((tasksRepository.getTask(newTask.id) as Success).data.isCompleted).isFalse()
+        assertThat((tasksRepository.getTask(newTask.id) as Success).data.isCompleted,`is`(false))
 
         // Mark is as complete
         tasksRepository.completeTask(newTask.id)
 
         // Verify it's now completed
-        assertThat((tasksRepository.getTask(newTask.id) as Success).data.isCompleted).isTrue()
+        assertThat((tasksRepository.getTask(newTask.id) as Success).data.isCompleted,`is`(true))
     }
 
     @Test
@@ -186,14 +201,14 @@ class DefaultTasksRepositoryTest {
         tasksRepository.completeTask(newTask.id)
 
         // Make sure it's completed
-        assertThat((tasksRepository.getTask(newTask.id) as Success).data.isActive).isFalse()
+        assertThat((tasksRepository.getTask(newTask.id) as Success).data.isActive,`is`(false))
 
         // Mark is as active
         tasksRepository.activateTask(newTask.id)
 
         // Verify it's now activated
         val result = tasksRepository.getTask(newTask.id) as Success
-        assertThat(result.data.isActive).isTrue()
+        assertThat(result.data.isActive,`is`(true))
     }
 
     @Test
@@ -209,8 +224,8 @@ class DefaultTasksRepositoryTest {
         val task2SecondTime = tasksRepository.getTask(task2.id, true) as Success
 
         // Both work because one is in remote and the other in cache
-        assertThat(task1SecondTime.data.id).isEqualTo(task1.id)
-        assertThat(task2SecondTime.data.id).isEqualTo(task2.id)
+        assertThat(task1SecondTime.data.id, IsEqual(task1.id))
+        assertThat(task2SecondTime.data.id, IsEqual(task2.id))
     }
 
     @Test
@@ -227,8 +242,8 @@ class DefaultTasksRepositoryTest {
         val task2SecondTime = tasksRepository.getTask(task2.id, true)
 
         // Only task2 works because the cache and local were invalidated
-        assertThat((task1SecondTime as? Success)?.data?.id).isNull()
-        assertThat((task2SecondTime as? Success)?.data?.id).isEqualTo(task2.id)
+        assertThat((task1SecondTime as? Success)?.data?.id, `is`(nullValue()))
+        assertThat((task2SecondTime as? Success)?.data?.id, IsEqual(task2.id))
     }
 
     @Test
@@ -239,9 +254,9 @@ class DefaultTasksRepositoryTest {
 
         val tasks = (tasksRepository.getTasks(true) as? Success)?.data
 
-        assertThat(tasks).hasSize(1)
-        assertThat(tasks).contains(task2)
-        assertThat(tasks).doesNotContain(completedTask)
+        assertThat(tasks, hasSize(1))
+        assertThat(tasks, hasItems(task2))
+        assertThat(tasks, not(hasItems(completedTask)))
     }
 
     @Test
@@ -255,8 +270,8 @@ class DefaultTasksRepositoryTest {
         val afterDeleteTasks = (tasksRepository.getTasks() as? Success)?.data
 
         // Verify tasks are empty now
-        assertThat(initialTasks).isNotEmpty()
-        assertThat(afterDeleteTasks).isEmpty()
+        assertThat(initialTasks, hasSize(greaterThan(0)))
+        assertThat(afterDeleteTasks, empty())
     }
 
     @Test
@@ -270,8 +285,8 @@ class DefaultTasksRepositoryTest {
         val afterDeleteTasks = (tasksRepository.getTasks(true) as? Success)?.data
 
         // Verify only one task was deleted
-        assertThat(afterDeleteTasks?.size).isEqualTo(initialTasks!!.size - 1)
-        assertThat(afterDeleteTasks).doesNotContain(task1)
+        assertThat(afterDeleteTasks?.size, IsEqual(initialTasks!!.size - 1))
+        assertThat(afterDeleteTasks, not(hasItems(task1)))
     }
 }
 

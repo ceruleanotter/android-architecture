@@ -32,10 +32,9 @@ import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.ServiceLocator
 import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeAndroidTestRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
 import com.example.android.architecture.blueprints.todoapp.tasks.ADD_EDIT_RESULT_OK
-import com.example.android.architecture.blueprints.todoapp.util.getTasksBlocking
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
@@ -45,23 +44,19 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.robolectric.annotation.LooperMode
-import org.robolectric.annotation.TextLayoutMode
 
 /**
  * Integration test for the Add Task screen.
  */
 @RunWith(AndroidJUnit4::class)
 @MediumTest
-@LooperMode(LooperMode.Mode.PAUSED)
-@TextLayoutMode(TextLayoutMode.Mode.REALISTIC)
 @ExperimentalCoroutinesApi
 class AddEditTaskFragmentTest {
     private lateinit var repository: TasksRepository
 
     @Before
     fun initRepository() {
-        repository = FakeRepository()
+        repository = FakeAndroidTestRepository()
         ServiceLocator.tasksRepository = repository
     }
 
@@ -118,7 +113,7 @@ class AddEditTaskFragmentTest {
     }
 
     @Test
-    fun validTask_isSaved() {
+    fun validTask_isSaved() = runBlockingTest {
         // GIVEN - On the "Add Task" screen.
         val navController = mock(NavController::class.java)
         launchFragment(navController)
@@ -129,7 +124,9 @@ class AddEditTaskFragmentTest {
         onView(withId(R.id.save_task_fab)).perform(click())
 
         // THEN - Verify that the repository saved the task
-        val tasks = (repository.getTasksBlocking(true) as Result.Success).data
+        // TODO here and elsewhere, replaced getTasksBlocking extension function with
+        //  runBlockingTest above
+        val tasks = (repository.getTasks(true) as Result.Success).data
         assertEquals(tasks.size, 1)
         assertEquals(tasks[0].title, "title")
         assertEquals(tasks[0].description, "description")

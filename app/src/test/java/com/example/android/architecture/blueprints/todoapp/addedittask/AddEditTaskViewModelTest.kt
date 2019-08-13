@@ -19,11 +19,12 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.example.android.architecture.blueprints.todoapp.MainCoroutineRule
 import com.example.android.architecture.blueprints.todoapp.R.string
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
-import com.google.common.truth.Truth.assertThat
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
+import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -38,7 +39,7 @@ class AddEditTaskViewModelTest {
     private lateinit var addEditTaskViewModel: AddEditTaskViewModel
 
     // Use a fake repository to be injected into the viewmodel
-    private lateinit var tasksRepository: FakeRepository
+    private lateinit var tasksRepository: FakeTestRepository
 
     // Set the main coroutines dispatcher for unit testing.
     @ExperimentalCoroutinesApi
@@ -54,7 +55,7 @@ class AddEditTaskViewModelTest {
     @Before
     fun setupViewModel() {
         // We initialise the repository with no tasks
-        tasksRepository = FakeRepository()
+        tasksRepository = FakeTestRepository()
 
         // Create class under test
         addEditTaskViewModel = AddEditTaskViewModel(tasksRepository)
@@ -73,8 +74,8 @@ class AddEditTaskViewModelTest {
         val newTask = tasksRepository.tasksServiceData.values.first()
 
         // Then a task is saved in the repository and the view updated
-        assertThat(newTask.title).isEqualTo(newTitle)
-        assertThat(newTask.description).isEqualTo(newDescription)
+        assertThat(newTask.title, `is`(newTitle))
+        assertThat(newTask.description, `is`(newDescription))
     }
 
     @Test
@@ -86,13 +87,13 @@ class AddEditTaskViewModelTest {
         addEditTaskViewModel.start(task.id)
 
         // Then progress indicator is shown
-        assertThat(addEditTaskViewModel.dataLoading.awaitNextValue()).isTrue()
+        assertThat(addEditTaskViewModel.dataLoading.getOrAwaitValue(), `is`(true))
 
         // Execute pending coroutines actions
         mainCoroutineRule.resumeDispatcher()
 
         // Then progress indicator is hidden
-        assertThat(addEditTaskViewModel.dataLoading.awaitNextValue()).isFalse()
+        assertThat(addEditTaskViewModel.dataLoading.getOrAwaitValue(), `is`(false))
     }
 
     @Test
@@ -104,9 +105,9 @@ class AddEditTaskViewModelTest {
         addEditTaskViewModel.start(task.id)
 
         // Verify a task is loaded
-        assertThat(addEditTaskViewModel.title.awaitNextValue()).isEqualTo(task.title)
-        assertThat(addEditTaskViewModel.description.awaitNextValue()).isEqualTo(task.description)
-        assertThat(addEditTaskViewModel.dataLoading.awaitNextValue()).isFalse()
+        assertThat(addEditTaskViewModel.title.getOrAwaitValue(), `is`(task.title))
+        assertThat(addEditTaskViewModel.description.getOrAwaitValue(), `is`(task.description))
+        assertThat(addEditTaskViewModel.dataLoading.getOrAwaitValue(), `is`(false))
     }
 
     @Test

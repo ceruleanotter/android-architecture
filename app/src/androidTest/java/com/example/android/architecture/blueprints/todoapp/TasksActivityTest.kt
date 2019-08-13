@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.architecture.blueprints.todoapp.tasks
+package com.example.android.architecture.blueprints.todoapp
 
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
@@ -33,16 +33,15 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.R.string
-import com.example.android.architecture.blueprints.todoapp.ServiceLocator
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
+import com.example.android.architecture.blueprints.todoapp.tasks.TasksActivity
 import com.example.android.architecture.blueprints.todoapp.util.DataBindingIdlingResource
 import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource
-import com.example.android.architecture.blueprints.todoapp.util.deleteAllTasksBlocking
+import com.example.android.architecture.blueprints.todoapp.util.getToolbarNavigationContentDescription
 import com.example.android.architecture.blueprints.todoapp.util.monitorActivity
-import com.example.android.architecture.blueprints.todoapp.util.saveTaskBlocking
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.core.IsNot.not
 import org.junit.After
@@ -52,7 +51,11 @@ import org.junit.runner.RunWith
 
 /**
  * Large End-to-End test for the tasks module.
+ *
+ * UI tests usually use [ActivityTestRule] but there's no API to perform an action before
+ * each test. The workaround is to use `ActivityScenario.launch()` and `ActivityScenario.close()`.
  */
+// TODO moved outside of tasks package, since these are not task specific
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 class TasksActivityTest {
@@ -64,8 +67,16 @@ class TasksActivityTest {
 
     @Before
     fun init() {
-        repository = ServiceLocator.provideTasksRepository(getApplicationContext())
-        repository.deleteAllTasksBlocking()
+        repository =
+            ServiceLocator.provideTasksRepository(
+                getApplicationContext()
+            )
+        // TODO why is this run blocking instead of runBlockingTest? runBlockingTest causes
+        // an exception
+        // E/TestRunner: java.lang.IllegalStateException: This job has not completed yet
+        runBlocking {
+            repository.deleteAllTasks()
+        }
     }
 
     @After
@@ -93,8 +104,8 @@ class TasksActivityTest {
     }
 
     @Test
-    fun editTask() {
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION"))
+    fun editTask() = runBlocking {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION"))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -116,6 +127,8 @@ class TasksActivityTest {
         onView(withText("NEW TITLE")).check(matches(isDisplayed()))
         // Verify previous task is not displayed
         onView(withText("TITLE1")).check(doesNotExist())
+        // Make sure the activity is closed before resetting the db:
+        activityScenario.close()
     }
 
     @Test
@@ -141,12 +154,14 @@ class TasksActivityTest {
         onView(withId(R.id.menu_filter)).perform(click())
         onView(withText(string.nav_all)).perform(click())
         onView(withText("TITLE1")).check(doesNotExist())
+        // Make sure the activity is closed before resetting the db:
+        activityScenario.close()
     }
 
     @Test
-    fun createTwoTasks_deleteOneTask() {
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION"))
-        repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION"))
+    fun createTwoTasks_deleteOneTask() = runBlocking {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION"))
+        repository.saveTask(Task("TITLE2", "DESCRIPTION"))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -162,13 +177,15 @@ class TasksActivityTest {
         onView(withText(string.nav_all)).perform(click())
         onView(withText("TITLE1")).check(matches(isDisplayed()))
         onView(withText("TITLE2")).check(doesNotExist())
+        // Make sure the activity is closed before resetting the db:
+        activityScenario.close()
     }
 
     @Test
-    fun markTaskAsCompleteOnDetailScreen_taskIsCompleteInList() {
+    fun markTaskAsCompleteOnDetailScreen_taskIsCompleteInList() = runBlocking {
         // Add 1 active task
         val taskTitle = "COMPLETED"
-        repository.saveTaskBlocking(Task(taskTitle, "DESCRIPTION"))
+        repository.saveTask(Task(taskTitle, "DESCRIPTION"))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -190,13 +207,15 @@ class TasksActivityTest {
         // Check that the task is marked as completed
         onView(allOf(withId(R.id.complete_checkbox), hasSibling(withText(taskTitle))))
             .check(matches(isChecked()))
+        // Make sure the activity is closed before resetting the db:
+        activityScenario.close()
     }
 
     @Test
-    fun markTaskAsActiveOnDetailScreen_taskIsActiveInList() {
+    fun markTaskAsActiveOnDetailScreen_taskIsActiveInList() = runBlocking {
         // Add 1 completed task
         val taskTitle = "ACTIVE"
-        repository.saveTaskBlocking(Task(taskTitle, "DESCRIPTION", true))
+        repository.saveTask(Task(taskTitle, "DESCRIPTION", true))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -217,13 +236,15 @@ class TasksActivityTest {
         // Check that the task is marked as active
         onView(allOf(withId(R.id.complete_checkbox), hasSibling(withText(taskTitle))))
             .check(matches(not(isChecked())))
+        // Make sure the activity is closed before resetting the db:
+        activityScenario.close()
     }
 
     @Test
-    fun markTaskAsCompleteAndActiveOnDetailScreen_taskIsActiveInList() {
+    fun markTaskAsCompleteAndActiveOnDetailScreen_taskIsActiveInList() = runBlocking {
         // Add 1 active task
         val taskTitle = "ACT-COMP"
-        repository.saveTaskBlocking(Task(taskTitle, "DESCRIPTION"))
+        repository.saveTask(Task(taskTitle, "DESCRIPTION"))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -246,13 +267,16 @@ class TasksActivityTest {
         // Check that the task is marked as active
         onView(allOf(withId(R.id.complete_checkbox), hasSibling(withText(taskTitle))))
             .check(matches(not(isChecked())))
+
+        // Make sure the activity is closed before resetting the db:
+        activityScenario.close()
     }
 
     @Test
-    fun markTaskAsActiveAndCompleteOnDetailScreen_taskIsCompleteInList() {
+    fun markTaskAsActiveAndCompleteOnDetailScreen_taskIsCompleteInList() = runBlocking {
         // Add 1 completed task
         val taskTitle = "COMP-ACT"
-        repository.saveTaskBlocking(Task(taskTitle, "DESCRIPTION", true))
+        repository.saveTask(Task(taskTitle, "DESCRIPTION", true))
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -275,6 +299,8 @@ class TasksActivityTest {
         // Check that the task is marked as active
         onView(allOf(withId(R.id.complete_checkbox), hasSibling(withText(taskTitle))))
             .check(matches(isChecked()))
+        // Make sure the activity is closed before resetting the db:
+        activityScenario.close()
     }
 
     @Test
@@ -292,5 +318,7 @@ class TasksActivityTest {
 
         // Then verify task is displayed on screen
         onView(withText("title")).check(matches(isDisplayed()))
+        // Make sure the activity is closed before resetting the db:
+        activityScenario.close()
     }
 }

@@ -40,9 +40,8 @@ import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.ServiceLocator
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeAndroidTestRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
-import com.example.android.architecture.blueprints.todoapp.util.saveTaskBlocking
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.allOf
@@ -54,8 +53,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.robolectric.annotation.LooperMode
-import org.robolectric.annotation.TextLayoutMode
 
 /**
  * Integration test for the Task List screen.
@@ -63,8 +60,6 @@ import org.robolectric.annotation.TextLayoutMode
 // TODO - Use FragmentScenario, see: https://github.com/android/android-test/issues/291
 @RunWith(AndroidJUnit4::class)
 @MediumTest
-@LooperMode(LooperMode.Mode.PAUSED)
-@TextLayoutMode(TextLayoutMode.Mode.REALISTIC)
 @ExperimentalCoroutinesApi
 class TasksFragmentTest {
 
@@ -72,7 +67,7 @@ class TasksFragmentTest {
 
     @Before
     fun initRepository() {
-        repository = FakeRepository()
+        repository = FakeAndroidTestRepository()
         ServiceLocator.tasksRepository = repository
     }
 
@@ -82,9 +77,9 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun displayTask_whenRepositoryHasData() {
+    fun displayTask_whenRepositoryHasData() = runBlockingTest {
         // GIVEN - One task already in the repository
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1"))
 
         // WHEN - On startup
         launchActivity()
@@ -94,8 +89,8 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun displayActiveTask() {
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
+    fun displayActiveTask() = runBlockingTest {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1"))
 
         launchActivity()
 
@@ -111,8 +106,8 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun displayCompletedTask() {
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1", true))
+    fun displayCompletedTask() = runBlockingTest {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1", true))
 
         launchActivity()
 
@@ -129,8 +124,8 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun deleteOneTask() {
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
+    fun deleteOneTask() = runBlockingTest {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1"))
 
         launchActivity()
 
@@ -147,9 +142,9 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun deleteOneOfTwoTasks() {
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
-        repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION2"))
+    fun deleteOneOfTwoTasks() = runBlockingTest {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1"))
+        repository.saveTask(Task("TITLE2", "DESCRIPTION2"))
 
         launchActivity()
 
@@ -168,8 +163,8 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun markTaskAsComplete() {
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
+    fun markTaskAsComplete() = runBlockingTest {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1"))
 
         launchActivity()
 
@@ -189,8 +184,8 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun markTaskAsActive() {
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1", true))
+    fun markTaskAsActive() = runBlockingTest {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1", true))
 
         launchActivity()
 
@@ -210,10 +205,10 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun showAllTasks() {
+    fun showAllTasks() = runBlockingTest {
         // Add one active task and one completed task
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
-        repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION2", true))
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1"))
+        repository.saveTask(Task("TITLE2", "DESCRIPTION2", true))
 
         launchActivity()
 
@@ -225,11 +220,11 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun showActiveTasks() {
+    fun showActiveTasks() = runBlockingTest {
         // Add 2 active tasks and one completed task
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
-        repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION2"))
-        repository.saveTaskBlocking(Task("TITLE3", "DESCRIPTION3", true))
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1"))
+        repository.saveTask(Task("TITLE2", "DESCRIPTION2"))
+        repository.saveTask(Task("TITLE3", "DESCRIPTION3", true))
 
         launchActivity()
 
@@ -242,11 +237,11 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun showCompletedTasks() {
+    fun showCompletedTasks() = runBlockingTest {
         // Add one active task and 2 completed tasks
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
-        repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION2", true))
-        repository.saveTaskBlocking(Task("TITLE3", "DESCRIPTION3", true))
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1"))
+        repository.saveTask(Task("TITLE2", "DESCRIPTION2", true))
+        repository.saveTask(Task("TITLE3", "DESCRIPTION3", true))
 
         launchActivity()
 
@@ -259,10 +254,10 @@ class TasksFragmentTest {
     }
 
     @Test
-    fun clearCompletedTasks() {
+    fun clearCompletedTasks() = runBlockingTest {
         // Add one active task and one completed task
-        repository.saveTaskBlocking(Task("TITLE1", "DESCRIPTION1"))
-        repository.saveTaskBlocking(Task("TITLE2", "DESCRIPTION2", true))
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1"))
+        repository.saveTask(Task("TITLE2", "DESCRIPTION2", true))
 
         launchActivity()
 
@@ -285,7 +280,7 @@ class TasksFragmentTest {
         onView(withText(R.string.nav_all)).perform(click())
 
         // Verify the "You have no tasks!" text is shown
-        onView(withText("You have no tasks!")).check(matches(isDisplayed()))
+        onView(withText(R.string.no_tasks_all)).check(matches(isDisplayed()))
     }
 
     @Test
@@ -296,7 +291,7 @@ class TasksFragmentTest {
         onView(withText(R.string.nav_completed)).perform(click())
 
         // Verify the "You have no completed tasks!" text is shown
-        onView(withText("You have no completed tasks!")).check(matches((isDisplayed())))
+        onView(withText(R.string.no_tasks_completed)).check(matches((isDisplayed())))
     }
 
     @Test
@@ -307,7 +302,8 @@ class TasksFragmentTest {
         onView(withText(R.string.nav_active)).perform(click())
 
         // Verify the "You have no active tasks!" text is shown
-        onView(withText("You have no active tasks!")).check(matches((isDisplayed())))
+        // TODO changed these from straight string to their string ids
+        onView(withText(R.string.no_tasks_active)).check(matches((isDisplayed())))
     }
 
     @Test
@@ -330,6 +326,7 @@ class TasksFragmentTest {
         )
     }
 
+    // TODO why is the activity needed here instead of fragment scenario?????
     private fun launchActivity(): ActivityScenario<TasksActivity>? {
         val activityScenario = launch(TasksActivity::class.java)
         activityScenario.onActivity { activity ->

@@ -27,9 +27,8 @@ import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.ServiceLocator
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeAndroidTestRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
-import com.example.android.architecture.blueprints.todoapp.util.saveTaskBlocking
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.core.IsNot.not
@@ -50,7 +49,7 @@ class TaskDetailFragmentTest {
 
     @Before
     fun initRepository() {
-        repository = FakeRepository()
+        repository = FakeAndroidTestRepository()
         ServiceLocator.tasksRepository = repository
     }
 
@@ -60,10 +59,10 @@ class TaskDetailFragmentTest {
     }
 
     @Test
-    fun activeTaskDetails_DisplayedInUi() {
+    fun activeTaskDetails_DisplayedInUi() = runBlockingTest{
         // GIVEN - Add active (incomplete) task to the DB
         val activeTask = Task("Active Task", "AndroidX Rocks", false)
-        repository.saveTaskBlocking(activeTask)
+        repository.saveTask(activeTask)
 
         // WHEN - Details fragment launched to display task
         val bundle = TaskDetailFragmentArgs(activeTask.id).toBundle()
@@ -81,10 +80,10 @@ class TaskDetailFragmentTest {
     }
 
     @Test
-    fun completedTaskDetails_DisplayedInUi() {
+    fun completedTaskDetails_DisplayedInUi() = runBlockingTest{
         // GIVEN - Add completed task to the DB
         val completedTask = Task("Completed Task", "AndroidX Rocks", true)
-        repository.saveTaskBlocking(completedTask)
+        repository.saveTask(completedTask)
 
         // WHEN - Details fragment launched to display task
         val bundle = TaskDetailFragmentArgs(completedTask.id).toBundle()

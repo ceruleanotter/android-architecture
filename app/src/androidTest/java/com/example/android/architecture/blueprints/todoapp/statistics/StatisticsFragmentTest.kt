@@ -30,11 +30,10 @@ import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.ServiceLocator
 import com.example.android.architecture.blueprints.todoapp.data.Task
-import com.example.android.architecture.blueprints.todoapp.data.source.FakeRepository
+import com.example.android.architecture.blueprints.todoapp.data.source.FakeAndroidTestRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
 import com.example.android.architecture.blueprints.todoapp.util.DataBindingIdlingResource
 import com.example.android.architecture.blueprints.todoapp.util.monitorFragment
-import com.example.android.architecture.blueprints.todoapp.util.saveTaskBlocking
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
@@ -56,7 +55,7 @@ class StatisticsFragmentTest {
 
     @Before
     fun initRepository() {
-        repository = FakeRepository()
+        repository = FakeAndroidTestRepository()
         ServiceLocator.tasksRepository = repository
     }
 
@@ -83,11 +82,11 @@ class StatisticsFragmentTest {
     }
 
     @Test
-    fun tasks_showsNonEmptyMessage() {
+    fun tasks_showsNonEmptyMessage() = runBlockingTest{
         // Given some tasks
         repository.apply {
-            saveTaskBlocking(Task("Title1", "Description1", false))
-            saveTaskBlocking(Task("Title2", "Description2", true))
+            saveTask(Task("Title1", "Description1", false))
+            saveTask(Task("Title2", "Description2", true))
         }
 
         val scenario = launchFragmentInContainer<StatisticsFragment>(Bundle(), R.style.AppTheme)

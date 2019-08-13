@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.architecture.blueprints.todoapp.tasks
+package com.example.android.architecture.blueprints.todoapp
 
 import android.view.Gravity
 import androidx.drawerlayout.widget.DrawerLayout
@@ -25,24 +25,22 @@ import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.contrib.DrawerActions.open
 import androidx.test.espresso.contrib.DrawerMatchers.isClosed
 import androidx.test.espresso.contrib.DrawerMatchers.isOpen
-import androidx.test.espresso.contrib.NavigationViewActions.navigateTo
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withContentDescription
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.ServiceLocator
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
+import com.example.android.architecture.blueprints.todoapp.tasks.TasksActivity
 import com.example.android.architecture.blueprints.todoapp.util.DataBindingIdlingResource
 import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource
+import com.example.android.architecture.blueprints.todoapp.util.getToolbarNavigationContentDescription
 import com.example.android.architecture.blueprints.todoapp.util.monitorActivity
-import com.example.android.architecture.blueprints.todoapp.util.saveTaskBlocking
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -51,7 +49,11 @@ import org.junit.runner.RunWith
 /**
  * Tests for the [DrawerLayout] layout component in [TasksActivity] which manages
  * navigation within the app.
+ *
+ * UI tests usually use [ActivityTestRule] but there's no API to perform an action before
+ * each test. The workaround is to use `ActivityScenario.launch()` and `ActivityScenario.close()`.
  */
+// TODO moved outside of tasks package, since these are not task specific
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 class AppNavigationTest {
@@ -91,35 +93,6 @@ class AppNavigationTest {
     }
 
     @Test
-    fun drawerNavigationFromTasksToStatistics() {
-        // start up Tasks screen
-        val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
-        dataBindingIdlingResource.monitorActivity(activityScenario)
-
-        onView(withId(R.id.drawer_layout))
-            .check(matches(isClosed(Gravity.START))) // Left Drawer should be closed.
-            .perform(open()) // Open Drawer
-
-        // Start statistics screen.
-        onView(withId(R.id.nav_view))
-            .perform(navigateTo(R.id.statistics_fragment_dest))
-
-        // Check that statistics screen was opened.
-        onView(withId(R.id.statistics_layout)).check(matches(isDisplayed()))
-
-        onView(withId(R.id.drawer_layout))
-            .check(matches(isClosed(Gravity.START))) // Left Drawer should be closed.
-            .perform(open()) // Open Drawer
-
-        // Start tasks screen.
-        onView(withId(R.id.nav_view))
-            .perform(navigateTo(R.id.tasks_fragment_dest))
-
-        // Check that tasks screen was opened.
-        onView(withId(R.id.tasks_container_layout)).check(matches(isDisplayed()))
-    }
-
-    @Test
     fun tasksScreen_clickOnAndroidHomeIcon_OpensNavigation() {
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -140,6 +113,8 @@ class AppNavigationTest {
         // Check if drawer is open
         onView(withId(R.id.drawer_layout))
             .check(matches(isOpen(Gravity.START))) // Left drawer is open open.
+        // When using ActivityScenario.launch, always call close()
+        activityScenario.close()
     }
 
     @Test
@@ -168,12 +143,14 @@ class AppNavigationTest {
         // Then check that the drawer is open
         onView(withId(R.id.drawer_layout))
             .check(matches(isOpen(Gravity.START))) // Left drawer is open open.
+        // When using ActivityScenario.launch, always call close()
+        activityScenario.close()
     }
 
     @Test
-    fun taskDetailScreen_doubleUIBackButton() {
+    fun taskDetailScreen_doubleUIBackButton() =runBlocking {
         val task = Task("UI <- button", "Description")
-        tasksRepository.saveTaskBlocking(task)
+        tasksRepository.saveTask(task)
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -201,12 +178,14 @@ class AppNavigationTest {
             )
         ).perform(click())
         onView(withId(R.id.tasks_container_layout)).check(matches(isDisplayed()))
+        // When using ActivityScenario.launch, always call close()
+        activityScenario.close()
     }
 
     @Test
-    fun taskDetailScreen_doubleBackButton() {
+    fun taskDetailScreen_doubleBackButton() = runBlocking {
         val task = Task("Back button", "Description")
-        tasksRepository.saveTaskBlocking(task)
+        tasksRepository.saveTask(task)
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
@@ -224,5 +203,7 @@ class AppNavigationTest {
         // Confirm that if we click back a second time, we end up back at the home screen
         pressBack()
         onView(withId(R.id.tasks_container_layout)).check(matches(isDisplayed()))
+        // When using ActivityScenario.launch, always call close()
+        activityScenario.close()
     }
 }
