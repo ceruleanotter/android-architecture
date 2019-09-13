@@ -18,23 +18,20 @@ package com.example.android.architecture.blueprints.todoapp.tasks
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.assertLiveDataEventTriggered
 import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
-import com.example.android.architecture.blueprints.todoapp.data.Result
-import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import org.hamcrest.CoreMatchers.*
-
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Test
-
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
+
+@RunWith(AndroidJUnit4::class)
 
 class TasksViewModelTest {
 
@@ -52,19 +49,19 @@ class TasksViewModelTest {
 
 
     @Test
-    fun clickOnFab_showsAddTaskUi() {
+    fun addNewTask_setsNewTaskEvent() {
         // When adding a new task
         tasksViewModel.addNewTask()
 
         // Then the event is triggered
-        val value = tasksViewModel.newTaskEvent.awaitNextValue()
+        val value = tasksViewModel.newTaskEvent.getOrAwaitValue()
         assertThat(
             value.getContentIfNotHandled(), (not(nullValue()))
         )
     }
 
     @Test
-    fun clickOnOpenTask_setsEvent() {
+    fun openTask_setsOpenTaskEvent() {
         // When opening a new task
         val taskId = "42"
         tasksViewModel.openTask(taskId)
@@ -110,7 +107,7 @@ class TasksViewModelTest {
         tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
 
         // Then the "Add task" action is visible
-        assertThat(tasksViewModel.tasksAddViewVisible.awaitNextValue(), `is`(true))
+        assertThat(tasksViewModel.tasksAddViewVisible.getOrAwaitValue(), `is`(true))
     }
 
 }

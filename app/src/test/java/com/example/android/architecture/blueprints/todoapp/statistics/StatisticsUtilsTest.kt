@@ -27,7 +27,7 @@ import org.junit.Test
 class StatisticsUtilsTest {
 
     @Test
-    fun getActiveAndCompletedStats_noCompleted() {
+    fun getActiveAndCompletedStats_noCompleted_returnsHundredZero() {
         val tasks = listOf(
             Task("title", "desc", isCompleted = false)
         )
@@ -40,7 +40,7 @@ class StatisticsUtilsTest {
     }
 
     @Test
-    fun getActiveAndCompletedStats_noActive() {
+    fun getActiveAndCompletedStats_noActive_returnsZeroHundred() {
         val tasks = listOf(
             Task("title", "desc", isCompleted = true)
         )
@@ -53,7 +53,7 @@ class StatisticsUtilsTest {
     }
 
     @Test
-    fun getActiveAndCompletedStats_both() {
+    fun getActiveAndCompletedStats_both_returnsFortySixty() {
         // Given 3 completed tasks and 2 active tasks
         val tasks = listOf(
             Task("title", "desc", isCompleted = true),
@@ -71,7 +71,7 @@ class StatisticsUtilsTest {
     }
 
     @Test
-    fun getActiveAndCompletedStats_error() {
+    fun getActiveAndCompletedStats_error_returnsZeros() {
         // When there's an error loading stats
         val result = getActiveAndCompletedStats(null)
 
@@ -81,7 +81,7 @@ class StatisticsUtilsTest {
     }
 
     @Test
-    fun getActiveAndCompletedStats_empty() {
+    fun getActiveAndCompletedStats_empty_returnsZeros() {
         // When there are no tasks
         val result = getActiveAndCompletedStats(emptyList())
 

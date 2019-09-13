@@ -17,20 +17,21 @@ package com.example.android.architecture.blueprints.todoapp.taskdetail
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
-import com.example.android.architecture.blueprints.todoapp.awaitNextValue
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import org.hamcrest.CoreMatchers.not
+import org.hamcrest.CoreMatchers.nullValue
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.hamcrest.CoreMatchers.*
-import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Rule
 
 
 /**
  * Unit tests for the implementation of [TaskDetailViewModel]
  */
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class TaskDetailViewModelTest {
 
     // Subject under test
@@ -63,7 +64,7 @@ class TaskDetailViewModelTest {
         this.taskDetailViewModel.editTask()
 
         // Then the event is triggered
-        val value = this.taskDetailViewModel.editTaskEvent.awaitNextValue()
+        val value = this.taskDetailViewModel.editTaskEvent.getOrAwaitValue()
         assertThat(
             value.getContentIfNotHandled(), (not(nullValue()))
         )
