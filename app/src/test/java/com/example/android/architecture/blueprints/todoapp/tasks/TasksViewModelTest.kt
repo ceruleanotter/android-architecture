@@ -23,16 +23,22 @@ import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-
 /**
  * Unit tests for the implementation of [TasksViewModel]
  */
+@ExperimentalCoroutinesApi
 class TasksViewModelTest {
 
     // Subject under test
@@ -55,6 +61,22 @@ class TasksViewModelTest {
         tasksRepository.addTasks(task1, task2, task3)
 
         tasksViewModel = TasksViewModel(tasksRepository)
+    }
+
+    @ExperimentalCoroutinesApi
+    val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()
+
+    @ExperimentalCoroutinesApi
+    @Before
+    fun setupDispatcher() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @ExperimentalCoroutinesApi
+    @After
+    fun tearDownDispatcher() {
+        Dispatchers.resetMain()
+        testDispatcher.cleanupTestCoroutines()
     }
 
     @Test
@@ -111,6 +133,44 @@ class TasksViewModelTest {
     }
 
     @Test
+    fun completeTask_dataAndSnackbarUpdated() {
+        // With a repository that has an active task
+        val task = Task("Title", "Description")
+        tasksRepository.addTasks(task)
+
+        // Complete task
+        tasksViewModel.completeTask(task, true)
+
+        // Verify the task is completed
+        // TODO why not used getTask to check this?
+        assertThat(tasksRepository.tasksServiceData[task.id]?.isCompleted, `is`(true))
+
+        // The snackbar is updated
+        assertSnackbarMessage(
+            tasksViewModel.snackbarText, R.string.task_marked_complete
+        )
+    }
+
+    @Test
+    fun activateTask_dataAndSnackbarUpdated() {
+        // With a repository that has a completed task
+        val task = Task("Title", "Description", true)
+        tasksRepository.addTasks(task)
+
+        // Activate task
+        tasksViewModel.completeTask(task, false)
+
+        // TODO why not used getTask to check this?
+        // Verify the task is active
+        assertThat(tasksRepository.tasksServiceData[task.id]?.isActive, `is`(true))
+
+        // The snackbar is updated
+        assertSnackbarMessage(
+            tasksViewModel.snackbarText, R.string.task_marked_active
+        )
+    }
+
+    @Test
     fun getTasksAddViewVisible() {
         // When the filter type is ALL_TASKS
         tasksViewModel.setFiltering(TasksFilterType.ALL_TASKS)
@@ -118,5 +178,4 @@ class TasksViewModelTest {
         // Then the "Add task" action is visible
         assertThat(tasksViewModel.tasksAddViewVisible.getOrAwaitValue(), `is`(true))
     }
-
 }
