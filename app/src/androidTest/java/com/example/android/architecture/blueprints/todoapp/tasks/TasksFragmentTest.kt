@@ -31,10 +31,8 @@ import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.hasSibling
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.contrib.RecyclerViewActions
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.example.android.architecture.blueprints.todoapp.R
@@ -302,7 +300,6 @@ class TasksFragmentTest {
         onView(withText(R.string.nav_active)).perform(click())
 
         // Verify the "You have no active tasks!" text is shown
-        // TODO changed these from straight string to their string ids
         onView(withText(R.string.no_tasks_active)).check(matches((isDisplayed())))
     }
 
@@ -326,7 +323,56 @@ class TasksFragmentTest {
         )
     }
 
-    // TODO why is the activity needed here instead of fragment scenario?????
+    @Test
+    fun clickTask_navigateToDetailFragmentOne() = runBlockingTest {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1", false, "id1"))
+        repository.saveTask(Task("TITLE2", "DESCRIPTION2", true, "id2"))
+
+        // GIVEN - On the home screen
+        val scenario = launchFragmentInContainer<TasksFragment>(Bundle(), R.style.AppTheme)
+        val navController = mock(NavController::class.java)
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+        }
+
+        // WHEN - Click on the first list item
+        onView(withId(R.id.tasks_list))
+            .perform(RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
+                hasDescendant(withText("TITLE1")), click()))
+
+
+        // THEN - Verify that we navigate to the first detail screen
+        verify(navController).navigate(
+            TasksFragmentDirections.actionTasksFragmentToTaskDetailFragment( "id1")
+        )
+    }
+
+    @Test
+    fun clickTask_navigateToDetailFragmentTwo() = runBlockingTest {
+        repository.saveTask(Task("TITLE1", "DESCRIPTION1", false, "id1"))
+        repository.saveTask(Task("TITLE2", "DESCRIPTION2", true, "id2"))
+
+        // GIVEN - On the home screen
+        val scenario = launchFragmentInContainer<TasksFragment>(Bundle(), R.style.AppTheme)
+        val navController = mock(NavController::class.java)
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+        }
+
+        // WHEN - Click on the second list item
+        onView(withId(R.id.tasks_list))
+            .perform(
+                RecyclerViewActions.actionOnItem<RecyclerView.ViewHolder>(
+                hasDescendant(withText("TITLE2")), click()))
+
+
+        // THEN - Verify that we navigate to the second detail screen
+        verify(navController).navigate(
+            TasksFragmentDirections.actionTasksFragmentToTaskDetailFragment( "id2")
+        )
+    }
+
+
     private fun launchActivity(): ActivityScenario<TasksActivity>? {
         val activityScenario = launch(TasksActivity::class.java)
         activityScenario.onActivity { activity ->
