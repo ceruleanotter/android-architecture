@@ -17,12 +17,9 @@
 package com.example.android.architecture.blueprints.todoapp.tasks
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.example.android.architecture.blueprints.todoapp.R
-import com.example.android.architecture.blueprints.todoapp.assertLiveDataEventTriggered
-import com.example.android.architecture.blueprints.todoapp.assertSnackbarMessage
+import com.example.android.architecture.blueprints.todoapp.*
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeTestRepository
-import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineDispatcher
@@ -30,6 +27,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.collection.IsCollectionWithSize.hasSize
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -77,6 +75,50 @@ class TasksViewModelTest {
     fun tearDownDispatcher() {
         Dispatchers.resetMain()
         testDispatcher.cleanupTestCoroutines()
+    }
+
+    @Test
+    fun loadActiveTasksFromRepositoryAndLoadIntoView() {
+        // Given an initialized TasksViewModel with initialized tasks
+        // When loading of Tasks is requested
+        tasksViewModel.setFiltering(TasksFilterType.ACTIVE_TASKS)
+
+        // Load tasks
+        tasksViewModel.loadTasks(true)
+
+        // Observe the items to keep LiveData emitting. tasksViewModel.dataLoading is updated
+        // when the switchMap in tasksViewModel.items is executed, which doesn't happen
+        // unless it's observed.
+        tasksViewModel.items.observeForTesting {
+
+            // Then progress indicator is hidden
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue(), `is`(false))
+
+            // And data correctly loaded
+            assertThat(tasksViewModel.items.getOrAwaitValue(), hasSize(1))
+        }
+    }
+
+    @Test
+    fun loadCompletedTasksFromRepositoryAndLoadIntoView() {
+        // Given an initialized TasksViewModel with initialized tasks
+        // When loading of Tasks is requested
+        tasksViewModel.setFiltering(TasksFilterType.COMPLETED_TASKS)
+
+        // Load tasks
+        tasksViewModel.loadTasks(true)
+
+        // Observe the items to keep LiveData emitting. tasksViewModel.dataLoading is updated
+        // when the switchMap in tasksViewModel.items is executed, which doesn't happen
+        // unless it's observed.
+        tasksViewModel.items.observeForTesting {
+
+            // Then progress indicator is hidden
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue(), `is`(false))
+
+            // And data correctly loaded
+            assertThat(tasksViewModel.items.getOrAwaitValue(), hasSize(2))
+        }
     }
 
     @Test

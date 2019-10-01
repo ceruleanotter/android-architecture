@@ -69,6 +69,8 @@ dependencies {
     testImplementation "org.hamcrest:hamcrest-all:$hamcrestVersion"
     testImplementation "androidx.arch.core:core-testing:$archTestingVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
+    // Espresso seems here to be used in part of getting the correct hasSize hamcrest assertion
+    testImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
 
     // Dependencies for Android instrumented unit tests
     androidTestImplementation "junit:junit:$junitVersion"
