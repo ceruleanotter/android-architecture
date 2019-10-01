@@ -28,6 +28,7 @@ import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.collection.IsCollectionWithSize.hasSize
+import org.hamcrest.collection.IsEmptyCollection.empty
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -118,6 +119,30 @@ class TasksViewModelTest {
 
             // And data correctly loaded
             assertThat(tasksViewModel.items.getOrAwaitValue(), hasSize(2))
+        }
+    }
+
+    @Test
+    fun loadTasks_error() {
+        // Make the repository return errors
+        tasksRepository.setReturnError(true)
+
+        // Load tasks
+        tasksViewModel.loadTasks(true)
+
+        // Observe the items to keep LiveData emitting. tasksViewModel.dataLoading is updated
+        // when the switchMap in tasksViewModel.items is executed, which doesn't happen
+        // unless it's observed.
+        tasksViewModel.items.observeForTesting {
+
+            // Then progress indicator is hidden
+            assertThat(tasksViewModel.dataLoading.getOrAwaitValue(), `is`(false))
+
+            // And the list of items is empty
+            assertThat(tasksViewModel.items.getOrAwaitValue(), empty())
+
+            // And the snackbar updated
+            assertSnackbarMessage(tasksViewModel.snackbarText, R.string.loading_tasks_error)
         }
     }
 
