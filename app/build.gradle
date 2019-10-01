@@ -70,7 +70,6 @@ dependencies {
     testImplementation "androidx.arch.core:core-testing:$archTestingVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
-    testImplementation "org.robolectric:robolectric:$robolectricVersion"
 
     // AndroidX Test - JVM testing
     testImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"

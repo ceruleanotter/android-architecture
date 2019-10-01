@@ -17,7 +17,12 @@ package com.example.android.architecture.blueprints.todoapp.tasks
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
+import androidx.lifecycle.viewModelScope
 import com.example.android.architecture.blueprints.todoapp.Event
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Result
@@ -208,31 +213,23 @@ class TasksViewModel(
     }
 
     private fun filterItems(tasks: List<Task>, filteringType: TasksFilterType): List<Task> {
-            val tasksToShow = ArrayList<Task>()
-            // We filter the tasks based on the requestType
-            for (task in tasks) {
-                when (filteringType) {
-                    TasksFilterType.ALL_TASKS -> tasksToShow.add(task)
-                    TasksFilterType.ACTIVE_TASKS -> if (task.isActive) {
-                        tasksToShow.add(task)
-                    }
-                    TasksFilterType.COMPLETED_TASKS -> if (task.isCompleted) {
-                        tasksToShow.add(task)
-                    }
+        val tasksToShow = ArrayList<Task>()
+        // We filter the tasks based on the requestType
+        for (task in tasks) {
+            when (filteringType) {
+                TasksFilterType.ALL_TASKS -> tasksToShow.add(task)
+                TasksFilterType.ACTIVE_TASKS -> if (task.isActive) {
+                    tasksToShow.add(task)
+                }
+                TasksFilterType.COMPLETED_TASKS -> if (task.isCompleted) {
+                    tasksToShow.add(task)
                 }
             }
-            return tasksToShow
         }
+        return tasksToShow
+    }
 
     fun refresh() {
         _forceUpdate.value = true
     }
-}
-
-@Suppress("UNCHECKED_CAST")
-class TasksViewModelFactory (
-    private val tasksRepository: TasksRepository
-) : ViewModelProvider.NewInstanceFactory() {
-    override fun <T : ViewModel> create(modelClass: Class<T>) =
-        (TasksViewModel(tasksRepository) as T)
 }
