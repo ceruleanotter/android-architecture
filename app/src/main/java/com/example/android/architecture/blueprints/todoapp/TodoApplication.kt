@@ -29,7 +29,6 @@ import timber.log.Timber.DebugTree
  */
 class TodoApplication : Application() {
 
-    // Depends on the flavor,
     val taskRepository: TasksRepository
         get() = ServiceLocator.provideTasksRepository(this)
 

@@ -87,7 +87,6 @@ class FakeTestRepository : TasksRepository {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    @VisibleForTesting
     fun addTasks(vararg tasks: Task) {
         for (task in tasks) {
             tasksServiceData[task.id] = task

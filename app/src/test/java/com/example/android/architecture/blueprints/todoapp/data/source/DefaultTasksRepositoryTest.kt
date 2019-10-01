@@ -66,20 +66,6 @@ class DefaultTasksRepositoryTest {
         )
     }
 
-    @ExperimentalCoroutinesApi
-    @Test
-    fun getTasks_emptyRepositoryAndUninitializedCache() = runBlockingTest {
-        val emptySource = FakeDataSource()
-        val tasksRepository = DefaultTasksRepository(
-            // TODO Dispatchers.Unconfined should be replaced with Dispatchers.Main
-            //  this requires understanding more about coroutines + testing
-            //  so we will keep this as Unconfined for now.
-            emptySource, emptySource, Dispatchers.Unconfined
-        )
-
-        assertThat(tasksRepository.getTasks(), instanceOf(Success::class.java))
-    }
-
     @Test
     fun getTasks_repositoryCachesAfterFirstApiCall() = runBlockingTest {
         // Trigger the repository to load data, which loads from remote and caches
@@ -148,15 +134,6 @@ class DefaultTasksRepositoryTest {
     }
 
     @Test
-    fun getTasks_WithRemoteDataSourceUnavailable_tasksAreRetrievedFromLocal() = runBlockingTest {
-        // When the remote data source is unavailable
-        tasksRemoteDataSource.tasks = null
-
-        // The repository fetches from the local source
-        assertThat((tasksRepository.getTasks() as Success).data, IsEqual(localTasks))
-    }
-
-    @Test
     fun getTasks_WithBothDataSourcesUnavailable_returnsError() = runBlockingTest {
         // When both sources are unavailable
         tasksRemoteDataSource.tasks = null
@@ -166,17 +143,6 @@ class DefaultTasksRepositoryTest {
         assertThat(tasksRepository.getTasks(), instanceOf(Result.Error::class.java))
     }
 
-    @Test
-    fun getTasks_refreshesLocalDataSource() = runBlockingTest {
-        val initialLocal = tasksLocalDataSource.tasks
-
-        // First load will fetch from remote
-        val newTasks = (tasksRepository.getTasks(true) as Success).data
-
-        assertThat(newTasks, IsEqual(remoteTasks))
-        assertThat(newTasks, IsEqual(tasksLocalDataSource.tasks as List<Task>))
-        assertThat(tasksLocalDataSource.tasks, `is`(initialLocal))
-    }
 
     @Test
     fun completeTask_completesTaskToServiceAPIUpdatesCache() = runBlockingTest {
@@ -208,41 +174,6 @@ class DefaultTasksRepositoryTest {
         // Verify it's now activated
         val result = tasksRepository.getTask(newTask.id) as Success
         assertThat(result.data.isActive,`is`(true))
-    }
-
-    @Test
-    fun getTask_repositoryCachesAfterFirstApiCall() = runBlockingTest {
-        // Trigger the repository to load data, which loads from remote
-        tasksRemoteDataSource.tasks = mutableListOf(task1)
-        tasksRepository.getTask(task1.id, true)
-
-        // Configure the remote data source to store a different task
-        tasksRemoteDataSource.tasks = mutableListOf(task2)
-
-        val task1SecondTime = tasksRepository.getTask(task1.id, true) as Success
-        val task2SecondTime = tasksRepository.getTask(task2.id, true) as Success
-
-        // Both work because one is in remote and the other in cache
-        assertThat(task1SecondTime.data.id, IsEqual(task1.id))
-        assertThat(task2SecondTime.data.id, IsEqual(task2.id))
-    }
-
-    @Test
-    fun getTask_forceRefresh() = runBlockingTest {
-        // Trigger the repository to load data, which loads from remote and caches
-        tasksRemoteDataSource.tasks = mutableListOf(task1)
-        tasksRepository.getTask(task1.id)
-
-        // Configure the remote data source to return a different task
-        tasksRemoteDataSource.tasks = mutableListOf(task2)
-
-        // Force refresh
-        val task1SecondTime = tasksRepository.getTask(task1.id, true)
-        val task2SecondTime = tasksRepository.getTask(task2.id, true)
-
-        // Only task2 works because the cache and local were invalidated
-        assertThat((task1SecondTime as? Success)?.data?.id, `is`(nullValue()))
-        assertThat((task2SecondTime as? Success)?.data?.id, IsEqual(task2.id))
     }
 
     @Test
