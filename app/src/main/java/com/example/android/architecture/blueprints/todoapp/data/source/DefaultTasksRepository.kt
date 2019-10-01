@@ -61,7 +61,7 @@ class DefaultTasksRepository private constructor(application: Application) {
         tasksLocalDataSource = TasksLocalDataSource(database.taskDao())
     }
 
-    suspend fun getTasks(forceUpdate: Boolean): Result<List<Task>> {
+    suspend fun getTasks(forceUpdate: Boolean = false): Result<List<Task>> {
         if (forceUpdate) {
             try {
                 updateTasksFromRemoteDataSource()
