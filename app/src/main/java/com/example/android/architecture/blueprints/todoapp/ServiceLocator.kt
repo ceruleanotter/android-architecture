@@ -17,14 +17,15 @@
 package com.example.android.architecture.blueprints.todoapp
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import androidx.room.Room
-import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.DefaultTasksRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksDataSource
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.local.TasksLocalDataSource
 import com.example.android.architecture.blueprints.todoapp.data.source.local.ToDoDatabase
 import com.example.android.architecture.blueprints.todoapp.data.source.remote.TasksRemoteDataSource
+import kotlinx.coroutines.runBlocking
 
 /**
  * A Service Locator for the [TasksRepository]. This is the prod version, with a
@@ -32,9 +33,11 @@ import com.example.android.architecture.blueprints.todoapp.data.source.remote.Ta
  */
 object ServiceLocator {
 
+    private val lock = Any()
     private var database: ToDoDatabase? = null
     @Volatile
     var tasksRepository: TasksRepository? = null
+        @VisibleForTesting set
 
     fun provideTasksRepository(context: Context): TasksRepository {
         synchronized(this) {
@@ -62,6 +65,19 @@ object ServiceLocator {
         return result
     }
 
-
-
+    @VisibleForTesting
+    fun resetRepository() {
+        synchronized(lock) {
+            runBlocking {
+                TasksRemoteDataSource.deleteAllTasks()
+            }
+            // Clear all data to avoid test pollution.
+            database?.apply {
+                clearAllTables()
+                close()
+            }
+            database = null
+            tasksRepository = null
+        }
+    }
 }
