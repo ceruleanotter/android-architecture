@@ -15,7 +15,6 @@
  */
 package com.example.android.architecture.blueprints.todoapp.data.source
 
-import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
