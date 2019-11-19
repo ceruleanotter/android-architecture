@@ -103,6 +103,7 @@ class TasksActivityTest {
         IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
     }
 
+    // TODO failed without db
     @Test
     fun editTask() = runBlocking {
         repository.saveTask(Task("TITLE1", "DESCRIPTION"))
@@ -131,6 +132,10 @@ class TasksActivityTest {
         activityScenario.close()
     }
 
+
+    // TODO rest of the tests passed ~4 times w/o the failing ones
+
+    // TODO this tests that used to pass before db now required db idlingresource.monitor activity
     @Test
     fun createOneTask_deleteTask() {
 
@@ -158,6 +163,8 @@ class TasksActivityTest {
         activityScenario.close()
     }
 
+    // TODO this tests that used to pass before db now required db idlingresource.monitor activity
+    // TODO now no idea what's going on - fails when there's no db, just counting
     @Test
     fun createTwoTasks_deleteOneTask() = runBlocking {
         repository.saveTask(Task("TITLE1", "DESCRIPTION"))
@@ -180,6 +187,9 @@ class TasksActivityTest {
         // Make sure the activity is closed before resetting the db:
         activityScenario.close()
     }
+
+
+    // TODO fails without db
 
     @Test
     fun markTaskAsCompleteOnDetailScreen_taskIsCompleteInList() = runBlocking {
@@ -211,6 +221,8 @@ class TasksActivityTest {
         activityScenario.close()
     }
 
+    //TODO fails without db
+    // TODO still fails without db, but with idling
     @Test
     fun markTaskAsActiveOnDetailScreen_taskIsActiveInList() = runBlocking {
         // Add 1 completed task
@@ -240,6 +252,8 @@ class TasksActivityTest {
         activityScenario.close()
     }
 
+    // TODO fails without db
+    // TODO still fails without db, but with idling
     @Test
     fun markTaskAsCompleteAndActiveOnDetailScreen_taskIsActiveInList() = runBlocking {
         // Add 1 active task
@@ -272,6 +286,8 @@ class TasksActivityTest {
         activityScenario.close()
     }
 
+    // TODO fails without db
+    // TODO still fails without db, but with idling
     @Test
     fun markTaskAsActiveAndCompleteOnDetailScreen_taskIsCompleteInList() = runBlocking {
         // Add 1 completed task
@@ -303,6 +319,7 @@ class TasksActivityTest {
         activityScenario.close()
     }
 
+    // TODO this tests that used to pass before db now required db idlingresource.monitor activity
     @Test
     fun createTask() {
         // start up Tasks screen

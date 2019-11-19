@@ -32,8 +32,8 @@ import com.example.android.architecture.blueprints.todoapp.ServiceLocator
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.FakeAndroidTestRepository
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
-import com.example.android.architecture.blueprints.todoapp.util.DataBindingIdlingResource
-import com.example.android.architecture.blueprints.todoapp.util.monitorFragment
+//import com.example.android.architecture.blueprints.todoapp.util.DataBindingIdlingResource
+//import com.example.android.architecture.blueprints.todoapp.util.monitorFragment
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
@@ -50,8 +50,8 @@ import org.junit.runner.RunWith
 class StatisticsFragmentTest {
     private lateinit var repository: TasksRepository
 
-    // An Idling Resource that waits for Data Binding to have no pending bindings
-    private val dataBindingIdlingResource = DataBindingIdlingResource()
+//    // An Idling Resource that waits for Data Binding to have no pending bindings
+//    private val dataBindingIdlingResource = DataBindingIdlingResource()
 
     @Before
     fun initRepository() {
@@ -68,18 +68,18 @@ class StatisticsFragmentTest {
      * Idling resources tell Espresso that the app is idle or busy. This is needed when operations
      * are not scheduled in the main Looper (for example when executed on a different thread).
      */
-    @Before
-    fun registerIdlingResource() {
-        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
-    }
-
-    /**
-     * Unregister your Idling Resource so it can be garbage collected and does not leak any memory.
-     */
-    @After
-    fun unregisterIdlingResource() {
-        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
-    }
+//    @Before
+//    fun registerIdlingResource() {
+//        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
+//    }
+//
+//    /**
+//     * Unregister your Idling Resource so it can be garbage collected and does not leak any memory.
+//     */
+//    @After
+//    fun unregisterIdlingResource() {
+//        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
+//    }
 
     @Test
     fun tasks_showsNonEmptyMessage() = runBlockingTest{
@@ -90,13 +90,13 @@ class StatisticsFragmentTest {
         }
 
         val scenario = launchFragmentInContainer<StatisticsFragment>(Bundle(), R.style.AppTheme)
-        dataBindingIdlingResource.monitorFragment(scenario)
+//        dataBindingIdlingResource.monitorFragment(scenario)
 
         val expectedActiveTaskText = getApplicationContext<Context>()
             .getString(R.string.statistics_active_tasks, 50.0f)
         val expectedCompletedTaskText = getApplicationContext<Context>()
             .getString(R.string.statistics_completed_tasks, 50.0f)
-        Thread.sleep(4000)
+
         // check that both info boxes are displayed and contain the correct info
         onView(withId(R.id.stats_active_text)).check(matches(isDisplayed()))
         onView(withId(R.id.stats_active_text)).check(matches(withText(expectedActiveTaskText)))

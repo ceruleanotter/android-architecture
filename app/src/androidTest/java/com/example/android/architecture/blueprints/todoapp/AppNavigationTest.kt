@@ -36,10 +36,9 @@ import androidx.test.filters.LargeTest
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksActivity
-import com.example.android.architecture.blueprints.todoapp.util.DataBindingIdlingResource
-import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource
+//import com.example.android.architecture.blueprints.todoapp.util.DataBindingIdlingResource
 import com.example.android.architecture.blueprints.todoapp.util.getToolbarNavigationContentDescription
-import com.example.android.architecture.blueprints.todoapp.util.monitorActivity
+//import com.example.android.architecture.blueprints.todoapp.util.monitorActivity
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -60,8 +59,8 @@ class AppNavigationTest {
 
     private lateinit var tasksRepository: TasksRepository
 
-    // An Idling Resource that waits for Data Binding to have no pending bindings
-    private val dataBindingIdlingResource = DataBindingIdlingResource()
+//    // An Idling Resource that waits for Data Binding to have no pending bindings
+//    private val dataBindingIdlingResource = DataBindingIdlingResource()
 
     @Before
     fun init() {
@@ -73,30 +72,32 @@ class AppNavigationTest {
         ServiceLocator.resetRepository()
     }
 
-    /**
-     * Idling resources tell Espresso that the app is idle or busy. This is needed when operations
-     * are not scheduled in the main Looper (for example when executed on a different thread).
-     */
-    @Before
-    fun registerIdlingResource() {
-        IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
-        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
-    }
+//    /**
+//     * Idling resources tell Espresso that the app is idle or busy. This is needed when operations
+//     * are not scheduled in the main Looper (for example when executed on a different thread).
+//     */
+//    @Before
+//    fun registerIdlingResource() {
+//        IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
+//        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
+//    }
+//
+//    /**
+//     * Unregister your Idling Resource so it can be garbage collected and does not leak any memory.
+//     */
+//    @After
+//    fun unregisterIdlingResource() {
+//        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+//        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
+//    }
 
-    /**
-     * Unregister your Idling Resource so it can be garbage collected and does not leak any memory.
-     */
-    @After
-    fun unregisterIdlingResource() {
-        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
-        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
-    }
+    // TODO this has passed ~4 times in a row
 
     @Test
     fun tasksScreen_clickOnAndroidHomeIcon_OpensNavigation() {
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
-        dataBindingIdlingResource.monitorActivity(activityScenario)
+//        dataBindingIdlingResource.monitorActivity(activityScenario)
 
         // Check that left drawer is closed at startup
         onView(withId(R.id.drawer_layout))
@@ -121,7 +122,7 @@ class AppNavigationTest {
     fun statsScreen_clickOnAndroidHomeIcon_OpensNavigation() {
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
-        dataBindingIdlingResource.monitorActivity(activityScenario)
+//        dataBindingIdlingResource.monitorActivity(activityScenario)
 
         // When the user navigates to the stats screen
         activityScenario.onActivity {
@@ -154,7 +155,7 @@ class AppNavigationTest {
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
-        dataBindingIdlingResource.monitorActivity(activityScenario)
+//        dataBindingIdlingResource.monitorActivity(activityScenario)
 
         // Click on the task on the list
         onView(withText("UI <- button")).perform(click())
@@ -189,7 +190,7 @@ class AppNavigationTest {
 
         // start up Tasks screen
         val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
-        dataBindingIdlingResource.monitorActivity(activityScenario)
+//        dataBindingIdlingResource.monitorActivity(activityScenario)
 
         // Click on the task on the list
         onView(withText("Back button")).perform(click())
