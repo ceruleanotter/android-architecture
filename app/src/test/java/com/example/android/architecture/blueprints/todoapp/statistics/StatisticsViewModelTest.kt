@@ -54,4 +54,22 @@ class StatisticsViewModelTest {
 
         statisticsViewModel = StatisticsViewModel(tasksRepository)
     }
+
+    @Test
+    fun loadTasks_loading() {
+        // Pause dispatcher so we can verify initial values
+        mainCoroutineRule.pauseDispatcher()
+
+        // Load the task in the viewmodel
+        statisticsViewModel.refresh()
+
+        // Then progress indicator is shown
+        assertThat(statisticsViewModel.dataLoading.getOrAwaitValue(), `is`(true))
+
+        // Execute pending coroutines actions
+        mainCoroutineRule.resumeDispatcher()
+
+        // Then progress indicator is hidden
+        assertThat(statisticsViewModel.dataLoading.getOrAwaitValue(), `is`(false))
+    }
 }
